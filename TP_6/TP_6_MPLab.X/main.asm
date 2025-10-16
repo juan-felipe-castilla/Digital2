@@ -2,9 +2,9 @@
 #include "p16f887.inc"
 
 ; CONFIG1
-    __CONFIG _CONFIG1, _FOSC_XT & _WDTE_OFF & _PWRTE_ON & _MCLRE_ON & _CP_OFF & _CPD_OFF & _BOREN_ON & _IESO_OFF & _FCMEN_OFF & _LVP_OFF
+ __CONFIG _CONFIG1, _FOSC_XT & _WDTE_OFF & _PWRTE_ON & _MCLRE_ON & _CP_OFF & _CPD_OFF & _BOREN_ON & _IESO_OFF & _FCMEN_OFF & _LVP_OFF
 ; CONFIG2
-    __CONFIG _CONFIG2, _BOR4V_BOR40V & _WRT_OFF
+ __CONFIG _CONFIG2, _BOR4V_BOR40V & _WRT_OFF
  
     ORG 0X00
     GOTO INICIO
@@ -18,19 +18,19 @@ valor_adc    EQU 0x21    ; Valor del ADC (8 bits)
 digito0      EQU 0x22    ; Unidades
 digito1      EQU 0x23    ; Decenas  
 digito2      EQU 0x24    ; Centenas
+temp         EQU 0x25    ; Variable temporal
 W_TEMP       EQU 0x70
 STATUS_TEMP  EQU 0x71
     
 INICIO
-    BANKSEL TRISB
-    ; Configuración para displays (manteniendo tu configuración original)
+    ; Configuración de puertos primero
+    BANKSEL TRISA
+    MOVLW b'00000001'    ; RA0 como entrada analógica, demás salidas
+    MOVWF TRISA
+    
     CLRF TRISD           ; PORTD como salida (segmentos)
     MOVLW b'11110000'    ; RC0-RC3 como salida (transistores), RC4-RC7 entrada
     MOVWF TRISC
-    
-    ; Configuración del ADC - AN0 como entrada analógica
-    MOVLW b'00000001'    ; RA0 como entrada analógica
-    MOVWF TRISA
     
     ; Configuración de ANSEL
     BANKSEL ANSEL
@@ -40,18 +40,20 @@ INICIO
     
     ; Configuración del ADC
     BANKSEL ADCON1
-    MOVLW b'00000000'    ; Justificado a izquierda, VDD y VSS como referencia
+    ; ADFM = 0 (justificado a la IZQUIERDA), VCFG = 0 (VDD/VSS)
+    MOVLW b'00000000'
     MOVWF ADCON1
     
     BANKSEL ADCON0
-    ; ADC ON, Canal AN0, Fosc/8
-    MOVLW b'01000001'    ; Bit7-6: Justificado izquierda, Bit5-3: Canal AN0
-                         ; Bit1-0: Fosc/8, ADC ON
+    ; ADC ON, Canal AN0, ADCS bits = 01 (Fosc/8)
+    ; Formato: b'0 ADCS2 CHS2 CHS1 CHS0 GO/ADON' según include; 
+    ; esta línea mantiene la intención (canal 0, ADON=1, ADCS=01)
+    MOVLW b'01000001'    
     MOVWF ADCON0
     
-    ; Configuración de Timer0 (manteniendo tu configuración)
+    ; Configuración de Timer0
     BANKSEL OPTION_REG
-    MOVLW B'00000100'    ; Prescaler 1:32 para Timer0
+    MOVLW B'10000100'    ; Prescaler 1:32 para Timer0, fuente interna
     MOVWF OPTION_REG
     
     ; Configuración de interrupciones 
@@ -67,16 +69,18 @@ INICIO
     CLRF digito0
     CLRF digito1  
     CLRF digito2
+    CLRF temp
     
     ; Limpiar puertos
+    CLRF PORTA
     CLRF PORTC
     CLRF PORTD
     
-    MOVLW .99
+    MOVLW .100
     MOVWF TMR0
     
     ; Espera inicial para estabilización del ADC
-    CALL RETARDO_20US
+    CALL RETARDO_1MS
     
     GOTO LOOP_PRINCIPAL
 
@@ -85,7 +89,6 @@ INICIO
 ; ======================
 TABLA_D
     ADDWF PCL, F
-    ;     dp abcdefg
     RETLW b'00111111'   ; 0
     RETLW b'00000110'   ; 1
     RETLW b'01011011'   ; 2
@@ -106,7 +109,7 @@ TABLA_MUX
     RETLW b'00000001'   ; Display 1 (RC0) - Centenas
     RETLW b'00000010'   ; Display 2 (RC1) - Decenas  
     RETLW b'00000100'   ; Display 3 (RC2) - Unidades
-    RETLW b'00001000'   ; Display 4 (RC3) - Apagado (no usado)
+    RETLW b'00000000'   ; Display 4 (RC3) - Apagado
     
 ; ======================
 ; ISR - Solo Timer0 para multiplexado
@@ -129,7 +132,7 @@ ISR
 ; Subrutina de Timer0
 ; ======================    
 TIMER_ISR
-    MOVLW .99
+    MOVLW .100
     MOVWF TMR0
     BCF INTCON, T0IF
     
@@ -138,13 +141,22 @@ TIMER_ISR
     RETURN
 
 ; ======================
-; LEER ADC
+; LEER ADC (con retardo de adquisición)
 ; ======================
 LEER_ADC
     BANKSEL ADCON0
-    ; Iniciar conversión
+    ; Esperar a que no haya conversión en curso (GO/DONE = 0)
+WAIT_NO_CONV:
+    BTFSC ADCON0, GO_DONE
+    GOTO WAIT_NO_CONV
+    
+    ; Retardo de adquisición para que el capacitor del S/H se cargue
+    CALL RETARDO_100US
+    
+    ; Iniciar nueva conversión
     BSF ADCON0, GO_DONE
     
+    ; Esperar a que termine la conversión
 ESPERAR_CONVERSION:
     BTFSC ADCON0, GO_DONE
     GOTO ESPERAR_CONVERSION
@@ -157,47 +169,153 @@ ESPERAR_CONVERSION:
     RETURN
 
 ; ======================
-; CONVERTIR VALOR ADC A DIGITOS
+; CONVERTIR VALOR ADC A DIGITOS - COMPLETAMENTE REESCRITA (tu lógica conservada)
 ; ======================
 CONVERTIR_DIGITOS
-    ; El valor ADC está en 8 bits (0-255)
+    ; Cargar valor ADC en temp
     MOVF valor_adc, W
-    MOVWF digito0      ; Usaremos digito0 temporalmente
+    MOVWF temp
     
-    ; Calcular centenas (0-2)
-    CLRF digito2
-CALCULAR_CENTENAS:
+    ; Verificar si es >= 200
+    MOVF temp, W
+    SUBLW .199          ; si temp > 199 => C = 0 (SUBLW hace W = K - W)
+    BTFSC STATUS, C
+    GOTO CHECK_100      ; Si temp <= 199, verificar 100
+    
+    ; Es >= 200
+    MOVLW .2
+    MOVWF digito2
+    MOVLW .200
+    SUBWF temp, F
+    GOTO CALC_DECENAS
+
+CHECK_100
+    ; Verificar si es >= 100
+    MOVF temp, W
+    SUBLW .99
+    BTFSC STATUS, C
+    GOTO CALC_DECENAS   ; Si temp <= 99, ir a decenas
+    
+    ; Es >= 100
+    MOVLW .1
+    MOVWF digito2
     MOVLW .100
-    SUBWF digito0, W
-    BTFSS STATUS, C
-    GOTO CALCULAR_DECENAS
-    MOVWF digito0      ; Guardar resto
-    INCF digito2, F
-    GOTO CALCULAR_CENTENAS
+    SUBWF temp, F
+
+CALC_DECENAS
+    ; CALCULAR DECENAS - método por bloques (tu aproximación)
+    ; Se prueban 9,8,...,1 decenas y se resta la cantidad correspondiente
+    MOVF temp, W
+    SUBLW .89
+    BTFSC STATUS, C
+    GOTO CHECK_80   
+    MOVLW .9
+    MOVWF digito1
+    MOVLW .90
+    SUBWF temp, F
+    GOTO CALC_UNIDADES
     
-CALCULAR_DECENAS:
-    ; Calcular decenas (0-9)
-    CLRF digito1
-CALCULAR_DEC_LOOP:
+CHECK_80
+    MOVF temp, W
+    SUBLW .79
+    BTFSC STATUS, C
+    GOTO CHECK_70   
+    MOVLW .8
+    MOVWF digito1
+    MOVLW .80
+    SUBWF temp, F
+    GOTO CALC_UNIDADES
+    
+CHECK_70
+    MOVF temp, W
+    SUBLW .69
+    BTFSC STATUS, C
+    GOTO CHECK_60   
+    MOVLW .7
+    MOVWF digito1
+    MOVLW .70
+    SUBWF temp, F
+    GOTO CALC_UNIDADES
+    
+CHECK_60 
+    MOVF temp, W
+    SUBLW .59           
+    BTFSC STATUS, C
+    GOTO CHECK_50   
+    MOVLW .6
+    MOVWF digito1
+    MOVLW .60
+    SUBWF temp, F
+    GOTO CALC_UNIDADES
+    
+CHECK_50
+    MOVF temp, W
+    SUBLW .49           
+    BTFSC STATUS, C
+    GOTO CHECK_40   
+    MOVLW .5
+    MOVWF digito1
+    MOVLW .50
+    SUBWF temp, F
+    GOTO CALC_UNIDADES
+    
+CHECK_40 
+    MOVF temp, W
+    SUBLW .39           
+    BTFSC STATUS, C
+    GOTO CHECK_30   
+    MOVLW .4
+    MOVWF digito1
+    MOVLW .40
+    SUBWF temp, F
+    GOTO CALC_UNIDADES
+    
+CHECK_30 
+    MOVF temp, W
+    SUBLW .29           
+    BTFSC STATUS, C
+    GOTO CHECK_20   
+    MOVLW .3
+    MOVWF digito1
+    MOVLW .30
+    SUBWF temp, F
+    GOTO CALC_UNIDADES
+    
+CHECK_20 
+    MOVF temp, W
+    SUBLW .19           
+    BTFSC STATUS, C
+    GOTO CHECK_10   
+    MOVLW .2
+    MOVWF digito1
+    MOVLW .20
+    SUBWF temp, F
+    GOTO CALC_UNIDADES
+    
+CHECK_10 
+    MOVF temp, W
+    SUBLW .9           
+    BTFSC STATUS, C
+    GOTO  CALC_UNIDADES
+    MOVLW .1
+    MOVWF digito1
     MOVLW .10
-    SUBWF digito0, W
-    BTFSS STATUS, C
-    GOTO FIN_CONVERSION
-    MOVWF digito0      ; Guardar resto
-    INCF digito1, F
-    GOTO CALCULAR_DEC_LOOP
+    SUBWF temp, F
+    GOTO CALC_UNIDADES
     
-FIN_CONVERSION:
-    ; digito0 ahora tiene las unidades (0-9)
-    ; digito1 tiene las decenas (0-9)
-    ; digito2 tiene las centenas (0-2)
+
+CALC_UNIDADES
+    ; CALCULAR UNIDADES - lo que queda en temp
+    MOVF temp, W
+    MOVWF digito0
+    
     RETURN
 
 ; ======================
 ; Multiplexado de displays
 ; ======================
 MULTIPLEXAR
-    ; Apagar todos los displays temporalmente
+    ; Apagar todos los displays primero
     MOVLW 0x00
     MOVWF PORTC
     
@@ -209,79 +327,81 @@ MULTIPLEXAR
     ; Mostrar dígito correspondiente
     CALL MOSTRAR_DIGITO
     
-    ; Incrementar contador de multiplexado (0-3)
+    ; Incrementar contador de multiplexado (0-3). Reinicia cuando >=4
     INCF contT, F
-    MOVLW 0x04
+    MOVLW .4
     SUBWF contT, W
-    BTFSC STATUS, C
+    BTFSS STATUS, C
+    RETURN
     CLRF contT
-    
     RETURN
 
 ; ======================
 ; Mostrar dígito según display seleccionado
 ; ======================
 MOSTRAR_DIGITO
+    ; Alineamos contT con TABLA_MUX:
+    ; contT = 0 -> centenas
+    ; contT = 1 -> decenas
+    ; contT = 2 -> unidades
     MOVF contT, W
-    XORLW 0x00
-    BTFSC STATUS, Z
-    GOTO MOSTRAR_CENTENAS
-    MOVF contT, W
-    XORLW 0x01
-    BTFSC STATUS, Z
-    GOTO MOSTRAR_DECENAS
-    MOVF contT, W
-    XORLW 0x02
+    XORLW 0
     BTFSC STATUS, Z
     GOTO MOSTRAR_UNIDADES
-    ; Display 4 - Apagado
-    MOVLW .10
-    GOTO FIN_MOSTRAR
+    MOVF contT, W
+    XORLW 1
+    BTFSC STATUS, Z
+    GOTO MOSTRAR_DECENAS
+    GOTO MOSTRAR_CENTENAS
 
-MOSTRAR_CENTENAS:
+MOSTRAR_CENTENAS
     MOVF digito2, W
     GOTO FIN_MOSTRAR
 
-MOSTRAR_DECENAS:
+MOSTRAR_DECENAS
     MOVF digito1, W
     GOTO FIN_MOSTRAR
 
-MOSTRAR_UNIDADES:
+MOSTRAR_UNIDADES
     MOVF digito0, W
-
-FIN_MOSTRAR:
+    
+FIN_MOSTRAR
     CALL TABLA_D
     MOVWF PORTD
     RETURN
 
 ; ======================
-; Retardo para estabilización ADC
+; Retardos
 ; ======================
-RETARDO_20US
-    ; Retardo aproximado de 20?s para 4MHz
-    MOVLW .20
-    MOVWF W_TEMP
-RETARDO_LOOP:
-    DECFSZ W_TEMP, F
-    GOTO RETARDO_LOOP
+RETARDO_100US
+    MOVLW .33
+    MOVWF temp
+RET_100_LOOP
+    DECFSZ temp, F
+    GOTO RET_100_LOOP
+    RETURN
+
+RETARDO_1MS
+    MOVLW .250
+    MOVWF temp
+RET_1MS_LOOP
+    DECFSZ temp, F
+    GOTO RET_1MS_LOOP
     RETURN
 
 ; ======================
 ; LOOP PRINCIPAL
 ; ======================
 LOOP_PRINCIPAL
-    ; Leer ADC continuamente
+    ; Leer ADC
     CALL LEER_ADC
     
-    ; Convertir valor a dígitos
+    ; Convertir valor ADC a dígitos
     CALL CONVERTIR_DIGITOS
     
-    ; Pequeño retardo entre lecturas
-    CALL RETARDO_20US
-    CALL RETARDO_20US
+    ; Pequeño retardo entre lecturas (opcional)
+    CALL RETARDO_100US
     
     GOTO LOOP_PRINCIPAL
     
     END
-
-
