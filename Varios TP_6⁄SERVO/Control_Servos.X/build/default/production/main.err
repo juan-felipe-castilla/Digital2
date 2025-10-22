@@ -1,0 +1,14 @@
+Warning[207] /home/fefee/Git_Digital2/TP_6/Control_Servos.X/main.asm 17 : Found label after column 1. (W_TEMP)
+Warning[207] /home/fefee/Git_Digital2/TP_6/Control_Servos.X/main.asm 18 : Found label after column 1. (STATUS_TEMP)
+Warning[207] /home/fefee/Git_Digital2/TP_6/Control_Servos.X/main.asm 21 : Found label after column 1. (POSM)
+Warning[207] /home/fefee/Git_Digital2/TP_6/Control_Servos.X/main.asm 22 : Found label after column 1. (POSICION_SERVO)
+Warning[207] /home/fefee/Git_Digital2/TP_6/Control_Servos.X/main.asm 23 : Found label after column 1. (POS_S1)
+Warning[207] /home/fefee/Git_Digital2/TP_6/Control_Servos.X/main.asm 24 : Found label after column 1. (POS_S2)
+Warning[207] /home/fefee/Git_Digital2/TP_6/Control_Servos.X/main.asm 25 : Found label after column 1. (CONTADOR1)
+Warning[207] /home/fefee/Git_Digital2/TP_6/Control_Servos.X/main.asm 26 : Found label after column 1. (CONTADOR2)
+Warning[207] /home/fefee/Git_Digital2/TP_6/Control_Servos.X/main.asm 27 : Found label after column 1. (CONTADOR3)
+Message[302] /home/fefee/Git_Digital2/TP_6/Control_Servos.X/main.asm 68 : Register in operand not in bank 0.  Ensure that bank bits are correct.
+Message[302] /home/fefee/Git_Digital2/TP_6/Control_Servos.X/main.asm 69 : Register in operand not in bank 0.  Ensure that bank bits are correct.
+Message[302] /home/fefee/Git_Digital2/TP_6/Control_Servos.X/main.asm 72 : Register in operand not in bank 0.  Ensure that bank bits are correct.
+Message[302] /home/fefee/Git_Digital2/TP_6/Control_Servos.X/main.asm 74 : Register in operand not in bank 0.  Ensure that bank bits are correct.
+Message[302] /home/fefee/Git_Digital2/TP_6/Control_Servos.X/main.asm 75 : Register in operand not in bank 0.  Ensure that bank bits are correct.

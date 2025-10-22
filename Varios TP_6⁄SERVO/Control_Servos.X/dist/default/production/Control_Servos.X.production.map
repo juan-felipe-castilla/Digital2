@@ -1,0 +1,81 @@
+MPLINK 5.09, LINKER
+Linker Map File - Created Wed Oct 22 00:28:06 2025
+
+                                 Section Info
+                  Section       Type    Address   Location Size(Bytes)
+                ---------  ---------  ---------  ---------  ---------
+                   .org_0       code   0x000000    program   0x000002
+                   .cinit    romdata   0x000001    program   0x000004
+                   .org_1       code   0x000004    program   0x000106
+.config_2007_BUILD/DEFAULT/PRODUCTION/MAIN.O       code   0x002007    program   0x000002
+.config_2008_BUILD/DEFAULT/PRODUCTION/MAIN.O       code   0x002008    program   0x000002
+
+
+
+                              Program Memory Usage 
+                               Start         End      
+                           ---------   ---------      
+                            0x000000    0x000002      
+                            0x000004    0x000086      
+                            0x002007    0x002008      
+            136 out of 8455 program addresses used, program memory utilization is 1%
+
+
+
+                              Symbols - Sorted by Name
+                     Name    Address   Location    Storage File                     
+                ---------  ---------  ---------  --------- ---------                
+       COMPLEMENTO_SERVO1   0x000033    program     static /home/fefee/Git_Digital2/TP_6/Control_Servos.X/main.asm
+       COMPLEMENTO_SERVO2   0x000043    program     static /home/fefee/Git_Digital2/TP_6/Control_Servos.X/main.asm
+                 DEC_POS1   0x000050    program     static /home/fefee/Git_Digital2/TP_6/Control_Servos.X/main.asm
+                 DEC_POS2   0x00005f    program     static /home/fefee/Git_Digital2/TP_6/Control_Servos.X/main.asm
+           EJECUTA_SERVO1   0x000028    program     static /home/fefee/Git_Digital2/TP_6/Control_Servos.X/main.asm
+           EJECUTA_SERVO2   0x000038    program     static /home/fefee/Git_Digital2/TP_6/Control_Servos.X/main.asm
+                 INC_POS1   0x000048    program     static /home/fefee/Git_Digital2/TP_6/Control_Servos.X/main.asm
+                 INC_POS2   0x000057    program     static /home/fefee/Git_Digital2/TP_6/Control_Servos.X/main.asm
+                   INICIO   0x00000c    program     static /home/fefee/Git_Digital2/TP_6/Control_Servos.X/main.asm
+                      ISR   0x000004    program     static /home/fefee/Git_Digital2/TP_6/Control_Servos.X/main.asm
+                LOOP_16ms   0x000071    program     static /home/fefee/Git_Digital2/TP_6/Control_Servos.X/main.asm
+                 LOOP_1ms   0x000068    program     static /home/fefee/Git_Digital2/TP_6/Control_Servos.X/main.asm
+              LOOP_1s_EXT   0x00007c    program     static /home/fefee/Git_Digital2/TP_6/Control_Servos.X/main.asm
+              LOOP_1s_INT   0x00007e    program     static /home/fefee/Git_Digital2/TP_6/Control_Servos.X/main.asm
+             LOOP_1s_INT2   0x000080    program     static /home/fefee/Git_Digital2/TP_6/Control_Servos.X/main.asm
+               LOOP_SERVO   0x000077    program     static /home/fefee/Git_Digital2/TP_6/Control_Servos.X/main.asm
+        MOVIMIENTO_SERVO1   0x00002c    program     static /home/fefee/Git_Digital2/TP_6/Control_Servos.X/main.asm
+        MOVIMIENTO_SERVO2   0x00003c    program     static /home/fefee/Git_Digital2/TP_6/Control_Servos.X/main.asm
+                PRINCIPAL   0x00001d    program     static /home/fefee/Git_Digital2/TP_6/Control_Servos.X/main.asm
+                 RET_16ms   0x00006f    program     static /home/fefee/Git_Digital2/TP_6/Control_Servos.X/main.asm
+                  RET_1ms   0x000066    program     static /home/fefee/Git_Digital2/TP_6/Control_Servos.X/main.asm
+                   RET_1s   0x00007a    program     static /home/fefee/Git_Digital2/TP_6/Control_Servos.X/main.asm
+                RET_SERVO   0x000075    program     static /home/fefee/Git_Digital2/TP_6/Control_Servos.X/main.asm
+
+
+
+                              Symbols - Sorted by Address
+                     Name    Address   Location    Storage File                     
+                ---------  ---------  ---------  --------- ---------                
+                      ISR   0x000004    program     static /home/fefee/Git_Digital2/TP_6/Control_Servos.X/main.asm
+                   INICIO   0x00000c    program     static /home/fefee/Git_Digital2/TP_6/Control_Servos.X/main.asm
+                PRINCIPAL   0x00001d    program     static /home/fefee/Git_Digital2/TP_6/Control_Servos.X/main.asm
+           EJECUTA_SERVO1   0x000028    program     static /home/fefee/Git_Digital2/TP_6/Control_Servos.X/main.asm
+        MOVIMIENTO_SERVO1   0x00002c    program     static /home/fefee/Git_Digital2/TP_6/Control_Servos.X/main.asm
+       COMPLEMENTO_SERVO1   0x000033    program     static /home/fefee/Git_Digital2/TP_6/Control_Servos.X/main.asm
+           EJECUTA_SERVO2   0x000038    program     static /home/fefee/Git_Digital2/TP_6/Control_Servos.X/main.asm
+        MOVIMIENTO_SERVO2   0x00003c    program     static /home/fefee/Git_Digital2/TP_6/Control_Servos.X/main.asm
+       COMPLEMENTO_SERVO2   0x000043    program     static /home/fefee/Git_Digital2/TP_6/Control_Servos.X/main.asm
+                 INC_POS1   0x000048    program     static /home/fefee/Git_Digital2/TP_6/Control_Servos.X/main.asm
+                 DEC_POS1   0x000050    program     static /home/fefee/Git_Digital2/TP_6/Control_Servos.X/main.asm
+                 INC_POS2   0x000057    program     static /home/fefee/Git_Digital2/TP_6/Control_Servos.X/main.asm
+                 DEC_POS2   0x00005f    program     static /home/fefee/Git_Digital2/TP_6/Control_Servos.X/main.asm
+                  RET_1ms   0x000066    program     static /home/fefee/Git_Digital2/TP_6/Control_Servos.X/main.asm
+                 LOOP_1ms   0x000068    program     static /home/fefee/Git_Digital2/TP_6/Control_Servos.X/main.asm
+                 RET_16ms   0x00006f    program     static /home/fefee/Git_Digital2/TP_6/Control_Servos.X/main.asm
+                LOOP_16ms   0x000071    program     static /home/fefee/Git_Digital2/TP_6/Control_Servos.X/main.asm
+                RET_SERVO   0x000075    program     static /home/fefee/Git_Digital2/TP_6/Control_Servos.X/main.asm
+               LOOP_SERVO   0x000077    program     static /home/fefee/Git_Digital2/TP_6/Control_Servos.X/main.asm
+                   RET_1s   0x00007a    program     static /home/fefee/Git_Digital2/TP_6/Control_Servos.X/main.asm
+              LOOP_1s_EXT   0x00007c    program     static /home/fefee/Git_Digital2/TP_6/Control_Servos.X/main.asm
+              LOOP_1s_INT   0x00007e    program     static /home/fefee/Git_Digital2/TP_6/Control_Servos.X/main.asm
+             LOOP_1s_INT2   0x000080    program     static /home/fefee/Git_Digital2/TP_6/Control_Servos.X/main.asm
+
+
