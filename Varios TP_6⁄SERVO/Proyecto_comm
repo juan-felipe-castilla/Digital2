@@ -1,0 +1,34 @@
+
+CLEAN SUCCESSFUL (total time: 70ms)
+make -f nbproject/Makefile-default.mk SUBPROJECTS= .build-conf
+make[1]: Entering directory '/home/fefee/Git_Digital2/TP_6/Transmitter_ej.X'
+make  -f nbproject/Makefile-default.mk dist/default/production/Transmitter_ej.X.production.hex
+make[2]: Entering directory '/home/fefee/Git_Digital2/TP_6/Transmitter_ej.X'
+"/opt/microchip/mplabx/v5.35/mpasmx/mpasmx" -q -p16f887 -u -l\"build/default/production/main.lst\" -e\"build/default/production/main.err\" -o\"build/default/production/main.o\" \"main.asm\" 
+Message[301] /opt/microchip/mplabx/v5.35/mpasmx/p16f877a.inc 34 : MESSAGE: (Processor-header file mismatch.  Verify selected processor.)
+Error[126]   /home/fefee/Git_Digital2/TP_6/Transmitter_ej.X/main.asm 10 : Argument out of range (not a valid config register address)
+Warning[207] /home/fefee/Git_Digital2/TP_6/Transmitter_ej.X/main.asm 12 : Found label after column 1. (CONTADOR1)
+Warning[207] /home/fefee/Git_Digital2/TP_6/Transmitter_ej.X/main.asm 13 : Found label after column 1. (CONTADOR2)
+Warning[207] /home/fefee/Git_Digital2/TP_6/Transmitter_ej.X/main.asm 14 : Found label after column 1. (CONTADOR3)
+Message[302] /home/fefee/Git_Digital2/TP_6/Transmitter_ej.X/main.asm 20 : Register in operand not in bank 0.  Ensure that bank bits are correct.
+Message[302] /home/fefee/Git_Digital2/TP_6/Transmitter_ej.X/main.asm 21 : Register in operand not in bank 0.  Ensure that bank bits are correct.
+Message[302] /home/fefee/Git_Digital2/TP_6/Transmitter_ej.X/main.asm 22 : Register in operand not in bank 0.  Ensure that bank bits are correct.
+Message[302] /home/fefee/Git_Digital2/TP_6/Transmitter_ej.X/main.asm 23 : Register in operand not in bank 0.  Ensure that bank bits are correct.
+Message[302] /home/fefee/Git_Digital2/TP_6/Transmitter_ej.X/main.asm 24 : Register in operand not in bank 0.  Ensure that bank bits are correct.
+Message[302] /home/fefee/Git_Digital2/TP_6/Transmitter_ej.X/main.asm 25 : Register in operand not in bank 0.  Ensure that bank bits are correct.
+Message[302] /home/fefee/Git_Digital2/TP_6/Transmitter_ej.X/main.asm 26 : Register in operand not in bank 0.  Ensure that bank bits are correct.
+Error[113]   /home/fefee/Git_Digital2/TP_6/Transmitter_ej.X/main.asm 42 : Symbol not previously defined (Retardo_20ms)
+"/opt/microchip/mplabx/v5.35/mpasmx/mplink"    -p16f887  -w  -m"dist/default/production/Transmitter_ej.X.production.map"   -z__MPLAB_BUILD=1  -odist/default/production/Transmitter_ej.X.production.cof  build/default/production/main.o     
+MPLINK 5.09, LINKER
+Device Database Version 1.50
+Copyright (c) 1998-2011 Microchip Technology Inc.
+Error - Error reading object file 'build/default/production/main.o'
+Errors    : 1
+
+make[2]: Leaving directory '/home/fefee/Git_Digital2/TP_6/Transmitter_ej.X'
+make[1]: Leaving directory '/home/fefee/Git_Digital2/TP_6/Transmitter_ej.X'
+make[2]: *** [nbproject/Makefile-default.mk:126: dist/default/production/Transmitter_ej.X.production.hex] Error 1
+make[1]: *** [nbproject/Makefile-default.mk:91: .build-conf] Error 2
+make: *** [nbproject/Makefile-impl.mk:39: .build-impl] Error 2
+
+BUILD FAILED (exit value 2, total time: 654ms)
