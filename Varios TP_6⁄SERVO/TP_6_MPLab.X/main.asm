@@ -21,6 +21,9 @@ digito2      EQU 0x24    ; Centenas
 temp         EQU 0x25    ; Variable temporal
 W_TEMP       EQU 0x70
 STATUS_TEMP  EQU 0x71
+  
+; PRUEBA GITTTT
+
     
 INICIO
     ; Configuración de puertos primero
