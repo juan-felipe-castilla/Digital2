@@ -86,7 +86,7 @@ INICIO
     CALL RETARDO_1MS
     
     GOTO LOOP_PRINCIPAL
-
+;PINGAAAA
 ; ======================
 ; Tabla del Display
 ; ======================
