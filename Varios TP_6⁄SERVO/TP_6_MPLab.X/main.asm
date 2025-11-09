@@ -53,6 +53,7 @@ INICIO
     MOVLW b'11110000'    
     MOVWF TRISC		 ; RC0-RC3 como salida digital (multiplexado) - FALTA DEFINIR COMUNICACION SERIE.
     
+    
 ; ======================
 ; Interrupciones, ADC, TMR0   
 ; ======================
@@ -94,38 +95,28 @@ INICIO
     CALL RETARDO_1MS     ; Espera ADC
     
     GOTO LOOP_PRINCIPAL
-
-    
-
-;Tabla del Display
-TABLA_D
-    ADDWF PCL, F
-    RETLW b'00111111'   ; 0
-    RETLW b'00000110'   ; 1
-    RETLW b'01011011'   ; 2
-    RETLW b'01001111'   ; 3
-    RETLW b'01100110'   ; 4
-    RETLW b'01101101'   ; 5
-    RETLW b'01111101'   ; 6
-    RETLW b'00000111'   ; 7
-    RETLW b'01111111'   ; 8
-    RETLW b'01101111'   ; 9
-    RETLW b'00000000'   ; Apagado
-
-; ======================
-; Tabla de multiplexado
-; ======================
-TABLA_MUX
-    ADDWF PCL, F
-    RETLW b'00000001'   ; Display 1 (RC0) - Centenas
-    RETLW b'00000010'   ; Display 2 (RC1) - Decenas  
-    RETLW b'00000100'   ; Display 3 (RC2) - Unidades
-    RETLW b'00000000'   ; Display 4 (RC3) - Apagado
+     
     
 ; ======================
-; ISR - Solo Timer0 para multiplexado
+; LOOP PRINCIPAL   
 ; ======================
-ISR
+    LOOP_PRINCIPAL
+    ;Leer ADC
+    CALL LEER_ADC
+    
+    ;Convertir valor ADC a dígitos
+    CALL CONVERTIR_DIGITOS
+    
+    ;Pequeño retardo entre lecturas (opcional)
+    CALL RETARDO_100US
+    
+    GOTO LOOP_PRINCIPAL
+     
+    
+; ======================
+; ISR  
+; ======================
+    ISR
     MOVWF W_TEMP
     SWAPF STATUS, W
     MOVWF STATUS_TEMP
@@ -138,11 +129,13 @@ ISR
     SWAPF W_TEMP, F
     SWAPF W_TEMP, W
     RETFIE
+
     
-; ======================
-; Subrutina de Timer0
-; ======================    
-TIMER_ISR
+; ==========================
+; SUBRUTINAS DE ISR
+; ==========================    
+;Subrutina TMR0
+    TIMER_ISR
     MOVLW .100
     MOVWF TMR0
     BCF INTCON, T0IF
@@ -150,10 +143,67 @@ TIMER_ISR
     ; Multiplexado de displays
     CALL MULTIPLEXAR
     RETURN
+    
+;Multiplexar
+    MULTIPLEXAR
+    ; Apagar todos los displays primero
+    MOVLW 0x00
+    MOVWF PORTC
+    
+    ; Seleccionar display según contT
+    MOVF contT, W
+    CALL TABLA_MUX
+    MOVWF PORTC        
+    
+    ; Mostrar dígito correspondiente
+    CALL MOSTRAR_DIGITO
+    
+    ; Incrementar contador de multiplexado (0-3). Reinicia cuando >=4
+    INCF contT, F
+    MOVLW .4
+    SUBWF contT, W
+    BTFSS STATUS, C
+    RETURN
+    CLRF contT
+    RETURN
+    
+;Mostrar Digito
+    MOSTRAR_DIGITO
+    ; Alineamos contT con TABLA_MUX:
+    ; contT = 0 -> centenas
+    ; contT = 1 -> decenas
+    ; contT = 2 -> unidades
+    MOVF contT, W
+    XORLW 0
+    BTFSC STATUS, Z
+    GOTO MOSTRAR_UNIDADES
+    MOVF contT, W
+    XORLW 1
+    BTFSC STATUS, Z
+    GOTO MOSTRAR_DECENAS
+    GOTO MOSTRAR_CENTENAS
 
-; ======================
-; LEER ADC (con retardo de adquisición)
-; ======================
+MOSTRAR_CENTENAS
+    MOVF digito2, W
+    GOTO FIN_MOSTRAR
+
+MOSTRAR_DECENAS
+    MOVF digito1, W
+    GOTO FIN_MOSTRAR
+
+MOSTRAR_UNIDADES
+    MOVF digito0, W
+    
+FIN_MOSTRAR
+    CALL TABLA_D
+    MOVWF PORTD
+    RETURN
+   
+    
+; =============================
+; SUBRUTINAS DE LOOP PRINCIPAL
+; =============================  
+;Leer ADC
 LEER_ADC
     BANKSEL ADCON0
     ; Esperar a que no haya conversión en curso (GO/DONE = 0)
@@ -178,10 +228,8 @@ ESPERAR_CONVERSION:
     
     BANKSEL 0
     RETURN
-
-; ======================
-; CONVERTIR VALOR ADC A DIGITOS - COMPLETAMENTE REESCRITA (tu lógica conservada)
-; ======================
+   
+;CONVERTIR_DIGITOS
 CONVERTIR_DIGITOS
     ; Cargar valor ADC en temp
     MOVF valor_adc, W
@@ -314,73 +362,41 @@ CHECK_10
     SUBWF temp, F
     GOTO CALC_UNIDADES
     
-
 CALC_UNIDADES
     ; CALCULAR UNIDADES - lo que queda en temp
     MOVF temp, W
     MOVWF digito0
     
     RETURN
-
-; ======================
-; Multiplexado de displays
-; ======================
-MULTIPLEXAR
-    ; Apagar todos los displays primero
-    MOVLW 0x00
-    MOVWF PORTC
+ 
     
-    ; Seleccionar display según contT
-    MOVF contT, W
-    CALL TABLA_MUX
-    MOVWF PORTC        
-    
-    ; Mostrar dígito correspondiente
-    CALL MOSTRAR_DIGITO
-    
-    ; Incrementar contador de multiplexado (0-3). Reinicia cuando >=4
-    INCF contT, F
-    MOVLW .4
-    SUBWF contT, W
-    BTFSS STATUS, C
-    RETURN
-    CLRF contT
-    RETURN
-
 ; ======================
-; Mostrar dígito según display seleccionado
-; ======================
-MOSTRAR_DIGITO
-    ; Alineamos contT con TABLA_MUX:
-    ; contT = 0 -> centenas
-    ; contT = 1 -> decenas
-    ; contT = 2 -> unidades
-    MOVF contT, W
-    XORLW 0
-    BTFSC STATUS, Z
-    GOTO MOSTRAR_UNIDADES
-    MOVF contT, W
-    XORLW 1
-    BTFSC STATUS, Z
-    GOTO MOSTRAR_DECENAS
-    GOTO MOSTRAR_CENTENAS
+; TABLAS
+; ======================    
+;Tabla del Display
+TABLA_D
+    ADDWF PCL, F
+    RETLW b'00111111'   ; 0
+    RETLW b'00000110'   ; 1
+    RETLW b'01011011'   ; 2
+    RETLW b'01001111'   ; 3
+    RETLW b'01100110'   ; 4
+    RETLW b'01101101'   ; 5
+    RETLW b'01111101'   ; 6
+    RETLW b'00000111'   ; 7
+    RETLW b'01111111'   ; 8
+    RETLW b'01101111'   ; 9
+    RETLW b'00000000'   ; Apagado
 
-MOSTRAR_CENTENAS
-    MOVF digito2, W
-    GOTO FIN_MOSTRAR
+;Tabla de multiplexado
+TABLA_MUX
+    ADDWF PCL, F
+    RETLW b'00000001'   ; Display 1 (RC0) - Centenas
+    RETLW b'00000010'   ; Display 2 (RC1) - Decenas  
+    RETLW b'00000100'   ; Display 3 (RC2) - Unidades
+    RETLW b'00000000'   ; Display 4 (RC3) - Apagado  
 
-MOSTRAR_DECENAS
-    MOVF digito1, W
-    GOTO FIN_MOSTRAR
-
-MOSTRAR_UNIDADES
-    MOVF digito0, W
     
-FIN_MOSTRAR
-    CALL TABLA_D
-    MOVWF PORTD
-    RETURN
-
 ; ======================
 ; Retardos
 ; ======================
@@ -400,19 +416,4 @@ RET_1MS_LOOP
     GOTO RET_1MS_LOOP
     RETURN
 
-; ======================
-; LOOP PRINCIPAL
-; ======================
-LOOP_PRINCIPAL
-    ; Leer ADC
-    CALL LEER_ADC
-    
-    ; Convertir valor ADC a dígitos
-    CALL CONVERTIR_DIGITOS
-    
-    ; Pequeño retardo entre lecturas (opcional)
-    CALL RETARDO_100US
-    
-    GOTO LOOP_PRINCIPAL
-    
     END
