@@ -14,82 +14,90 @@
     
 ; Variables para displays
 contT        EQU 0x20    ; Contador para multiplexado
-valor_adc    EQU 0x21    ; Valor del ADC (8 bits)
-digito0      EQU 0x22    ; Unidades
-digito1      EQU 0x23    ; Decenas  
-digito2      EQU 0x24    ; Centenas
-temp         EQU 0x25    ; Variable temporal
-W_TEMP       EQU 0x70
-STATUS_TEMP  EQU 0x71
+d0	     EQU 0x21    ; DISPLAY 0 --> LDR0
+d1	     EQU 0x22    ; DISPLAY 1 --> LDR1
+d2	     EQU 0x23    ; DISPLAY 2 --> LDR2
+d3	     EQU 0X24    ; DISPLAY 3 --> LDR3
+ADC0	     EQU 0X25    ; Valor digital de RB1 --> LDR0
+ADC1	     EQU 0X26	 ; Valor digital de RB2 --> LDR1   
+ADC2	     EQU 0X27	 ; Valor digital de RB3 --> LDR2
+ADC3	     EQU 0X28	 ; Valor digital de RB4 --> LDR3
+
+W_TEMP       EQU 0x70	 ; CONTEXTO
+STATUS_TEMP  EQU 0x71	 ; CONTEXTO
   
+; ======================
+; NOTAS IMPORTANTES
+; RB1(AN10) , RB2(AN8) , RB3 (AN9) , RB4(AN11)
+; Hasta ahora está implementado: ADC
+; Falta implementar: COMUNICACIÓN SERIE
+; ======================
 
-
-    
+  
+  
 INICIO
-    ; Configuración de puertos primero
-    BANKSEL TRISA
-    MOVLW b'00000001'    ; RA0 como entrada analógica, demás salidas
-    MOVWF TRISA
+; ======================
+; Configuracion de Puertos    
+; ======================
+    ;PORTB
+    BANKSEL SRCON        ; Banco 3
+    MOVLW b'01111111'	
+    MOVWF TRISB		 ; RB0 entrada (pulsador), RB1,2,3,4 entradas (LDR), RB6,7 entradas (SW cambios de estado en PORTB)
+    MOVLW b'00001111'
+    MOVWF ANSELH	 ; RB1,2,3,4 analógicos
+    CLRF  ANSEL          ; Resto de PORTB en digital
     
-    CLRF TRISD           ; PORTD como salida (segmentos)
-    MOVLW b'11110000'    ; RC0-RC3 como salida (transistores), RC4-RC7 entrada
-    MOVWF TRISC
+    ;PORTD, PORTC
+    BANKSEL TRISD        ; Banco 1
+    CLRF TRISD           ; PORTD como salida (displays)
+    MOVLW b'11110000'    
+    MOVWF TRISC		 ; RC0-RC3 como salida digital (multiplexado) - FALTA DEFINIR COMUNICACION SERIE.
     
-    ; Configuración de ANSEL
-    BANKSEL ANSEL
-    MOVLW b'00000001'    ; AN0 como analógico
-    MOVWF ANSEL
-    CLRF ANSELH          ; Resto digital
+; ======================
+; Interrupciones, ADC, TMR0   
+; ======================
+    ;ADC
+    CLRF ADCON1		 ; Sigo en banco 1, voltajes de referencia PIC, Justificación IZQUIERDA (ADRESH)
     
-    ; Configuración del ADC
-    BANKSEL ADCON1
-    ; ADFM = 0 (justificado a la IZQUIERDA), VCFG = 0 (VDD/VSS)
-    MOVLW b'00000000'
-    MOVWF ADCON1
+    BANKSEL ADCON0	 ; Banco 0
+    MOVLW b'00101011'	  
+    MOVWF ADCON0	 ; Habilito ADC, GO/DONDE, Arranco convirtiendo RB1 (AN10), FOSC/2
     
-    BANKSEL ADCON0
-    ; ADC ON, Canal AN0, ADCS bits = 01 (Fosc/8)
-    ; Formato: b'0 ADCS2 CHS2 CHS1 CHS0 GO/ADON' según include; 
-    ; esta línea mantiene la intención (canal 0, ADON=1, ADCS=01)
-    MOVLW b'01000001'    
-    MOVWF ADCON0
+    ;TMR0
+    BANKSEL TRISC        ; Banco 1 
+    MOVLW B'10000111'    
+    MOVWF OPTION_REG	 ; Prescaler 1:256 para Timer0, fuente interna
+ 
+    ;INTERRUPCIONES
+    MOVLW b'10101000'
+    MOVWF INTCON	 ; Habilito interrupciones por cambios en PORTB y de TMR0. Bajo las banderas.
     
-    ; Configuración de Timer0
-    BANKSEL OPTION_REG
-    MOVLW B'10000100'    ; Prescaler 1:32 para Timer0, fuente interna
-    MOVWF OPTION_REG
+    BANKSEL PORTA        ; Banco 0
     
-    ; Configuración de interrupciones 
-    BCF INTCON, T0IF     ; Limpiar flag del Timer0
-    BSF INTCON, T0IE     ; Habilitar interrupción del Timer0
-    BSF INTCON, GIE      ; Habilitar interrupciones globales
+    ;Inicialización de variables, puertos, TMR0 y espera ADC
+    CLRF contT       
+    CLRF d0	     
+    CLRF d1	    
+    CLRF d2	     
+    CLRF d3	     
+    CLRF ADC0	    
+    CLRF ADC1	        
+    CLRF ADC2	
+    CLRF ADC3	
     
-    BANKSEL 0            ; Volver al banco 0
-    
-    ; Inicialización de variables
-    CLRF contT
-    CLRF valor_adc
-    CLRF digito0
-    CLRF digito1  
-    CLRF digito2
-    CLRF temp
-    
-    ; Limpiar puertos
-    CLRF PORTA
     CLRF PORTC
     CLRF PORTD
     
-    MOVLW .100
-    MOVWF TMR0
+    MOVLW .178
+    MOVWF TMR0		 ; Precargo TMR0 con 178, PS 1:256, Interrumpe cada aprox. 20mS
     
-    ; Espera inicial para estabilización del ADC
-    CALL RETARDO_1MS
+    CALL RETARDO_1MS     ; Espera ADC
     
     GOTO LOOP_PRINCIPAL
-;PINGAAAA
-; ======================
-; Tabla del Display
-; ======================
+
+    
+
+;Tabla del Display
 TABLA_D
     ADDWF PCL, F
     RETLW b'00111111'   ; 0
