@@ -37,7 +37,8 @@ STATUS_TEMP  EQU 0x71	 ; CONTEXTO
   
 INICIO
 ; ======================
-; Configuracion de Puertos    
+; Configuracion de Puertos 
+; FALTA CNFIGURAR EL PIN DE SALIDA PARA EL PULSO DEL SERVOMOTOR
 ; ======================
     ;PORTB
     BANKSEL SRCON        ; Banco 3
