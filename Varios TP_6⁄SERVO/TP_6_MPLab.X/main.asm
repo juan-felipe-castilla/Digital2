@@ -26,6 +26,7 @@ P_DI	     EQU 0X29    ; Variable para determinar si me muevo a la derecha o izqu
 P_UD	     EQU 0X30	 ; Variable para determinar si me muevo arriba o abajo
 DIFF	     EQU 0X31    ; Variable para analizar la diferencia de los resultados del ADC 
 temp	     EQU 0x32    ; Variable de los retardos
+SP	     EQU 0X33	 ; Posicion
 
 W_TEMP       EQU 0x70	 ; CONTEXTO
 STATUS_TEMP  EQU 0x71	 ; CONTEXTO
@@ -66,12 +67,12 @@ INICIO
     CLRF ADCON1		 ; Sigo en banco 1, voltajes de referencia PIC, Justificación IZQUIERDA (ADRESH)
     
     BANKSEL ADCON0	 ; Banco 0
-    MOVLW b'00101001'	  
+    MOVLW b'01101001'	  
     MOVWF ADCON0	 ; Habilito ADC, GO/DONE DESHABILITADO, Arranco convirtiendo RB1 (AN10), FOSC/2
     
     ;TMR0
     BANKSEL TRISC        ; Banco 1 
-    MOVLW B'10000111'    
+    MOVLW B'10000000'    
     MOVWF OPTION_REG	 ; Prescaler 1:256 para Timer0, fuente interna
  
     ;INTERRUPCIONES
@@ -93,11 +94,12 @@ INICIO
     CLRF DIFF
     CLRF P_DI
     CLRF P_UD
+    CLRF SP
     
     CLRF PORTC
     CLRF PORTD
     
-    MOVLW .178
+    MOVLW .125
     MOVWF TMR0		 ; Precargo TMR0 con 178, PS 1:256, Interrumpe cada aprox. 20mS
     
     CALL RETARDO_1MS     ; Espera ADC
@@ -138,8 +140,14 @@ INICIO
     MOVF ADRESH, W
     MOVWF ADC3
     
-    CALL VERIFICAR_DI			;De esta rutina, se vuelve con la posición en P_DI que corresponde en el servo del eje x.
-    
+    ;CALL VERIFICAR_DI			;De esta rutina, se vuelve con la posición en P_DI que corresponde en el servo del eje x.
+    CALL P4
+    ;CALL DELAY5S
+    ;CALL P0
+    ;CALL DELAY5S
+    ;CALL P2 
+    ;CALL DELAY5S
+    ;CALL P3
     
 ;    ;Convertir valor ADC a dígitos
 ;    CALL CONVERTIR_DIGITOS
@@ -173,69 +181,12 @@ INICIO
 ; ==========================    
 ;Subrutina TMR0
     TIMER_ISR
-    MOVLW .178
+    MOVLW .125
     MOVWF TMR0				;Precargo TMR0 con .178 para la proxima interrrupción
     BCF INTCON, T0IF
+    INCF SP
     RETURN
-    
-;    ; Multiplexado de displays
-;    CALL MULTIPLEXAR
-;    RETURN
-;    
-;;Multiplexar
-;    MULTIPLEXAR
-;    ; Apagar todos los displays primero
-;    MOVLW 0x00
-;    MOVWF PORTC
-;    
-;    ; Seleccionar display según contT
-;    MOVF contT, W
-;    CALL TABLA_MUX
-;    MOVWF PORTC        
-;    
-;    ; Mostrar dígito correspondiente
-;    CALL MOSTRAR_DIGITO
-;    
-;    ; Incrementar contador de multiplexado (0-3). Reinicia cuando >=4
-;    INCF contT, F
-;    MOVLW .4
-;    SUBWF contT, W
-;    BTFSS STATUS, C
-;    RETURN
-;    CLRF contT
-;    RETURN
-;    
-;;Mostrar Digito
-;    MOSTRAR_DIGITO
-;    ; Alineamos contT con TABLA_MUX:
-;    ; contT = 0 -> centenas
-;    ; contT = 1 -> decenas
-;    ; contT = 2 -> unidades
-;    MOVF contT, W
-;    XORLW 0
-;    BTFSC STATUS, Z
-;    GOTO MOSTRAR_UNIDADES
-;    MOVF contT, W
-;    XORLW 1
-;    BTFSC STATUS, Z
-;    GOTO MOSTRAR_DECENAS
-;    GOTO MOSTRAR_CENTENAS
-;
-;MOSTRAR_CENTENAS
-;    MOVF digito2, W
-;    GOTO FIN_MOSTRAR
-;
-;MOSTRAR_DECENAS
-;    MOVF digito1, W
-;    GOTO FIN_MOSTRAR
-;
-;MOSTRAR_UNIDADES
-;    MOVF digito0, W
-;    
-;FIN_MOSTRAR
-;    CALL TABLA_D
-;    MOVWF PORTD
-;    RETURN
+
    
     
 ; =============================
@@ -251,22 +202,22 @@ INICIO
     RETURN			    ;GO/DONE = 0, terminó la conversión, vuelvo al LOOP_PRINCIPAL
     
     SELECCIONAR_AN10
-    MOVLW b'00101001'		    ;B2-B5 seleccionan que AN se convierte (ver datasheet)
+    MOVLW b'01101001'		    ;B2-B5 seleccionan que AN se convierte (ver datasheet)
     MOVWF ADCON0
     RETURN
     
     SELECCIONAR_AN8
-    MOVLW b'00100001'
+    MOVLW b'01100001'
     MOVWF ADCON0
     RETURN
     
     SELECCIONAR_AN9
-    MOVLW b'00100101'
+    MOVLW b'01100101'
     MOVWF ADCON0
     RETURN
     
     SELECCIONAR_AN11
-    MOVLW b'00101101'
+    MOVLW b'01101101'
     MOVWF ADCON0
     RETURN
     
@@ -278,7 +229,7 @@ INICIO
     GOTO NEGATIVO_D			    ;C = 0, Resultado negativo, me muevo a la derecha
     
     POSITIVO_I
-    MOVFW DIFF,W
+    MOVF DIFF,W
     SUBLW .50
     BTFSC STATUS,C			    
     GOTO POS_0				    ;C = 1, DIFF <= 50, Rango de la posición 0
@@ -327,172 +278,89 @@ INICIO
     MOVWF P_DI
     RETURN
     
-;    ;Leer ADC
-;LEER_ADC
-;    BANKSEL ADCON0
-;    ; Esperar a que no haya conversión en curso (GO/DONE = 0)
-;WAIT_NO_CONV:
-;    BTFSC ADCON0, GO_DONE
-;    GOTO WAIT_NO_CONV
-;    
-;    ; Retardo de adquisición para que el capacitor del S/H se cargue
-;    CALL RETARDO_100US
-;    
-;    ; Iniciar nueva conversión
-;    BSF ADCON0, GO_DONE
-;    
-;    ; Esperar a que termine la conversión
-;ESPERAR_CONVERSION:
-;    BTFSC ADCON0, GO_DONE
-;    GOTO ESPERAR_CONVERSION
-;    
-;    ; Leer resultado (8 bits - justificado a izquierda)
-;    MOVF ADRESH, W
-;    MOVWF valor_adc
-;    
-;    BANKSEL 0
-;    RETURN
-;   
-;;CONVERTIR_DIGITOS
-;CONVERTIR_DIGITOS
-;    ; Cargar valor ADC en temp
-;    MOVF valor_adc, W
-;    MOVWF temp
-;    
-;    ; Verificar si es >= 200
-;    MOVF temp, W
-;    SUBLW .199          ; si temp > 199 => C = 0 (SUBLW hace W = K - W)
-;    BTFSC STATUS, C
-;    GOTO CHECK_100      ; Si temp <= 199, verificar 100
-;    
-;    ; Es >= 200
-;    MOVLW .2
-;    MOVWF digito2
-;    MOVLW .200
-;    SUBWF temp, F
-;    GOTO CALC_DECENAS
-;
-;CHECK_100
-;    ; Verificar si es >= 100
-;    MOVF temp, W
-;    SUBLW .99
-;    BTFSC STATUS, C
-;    GOTO CALC_DECENAS   ; Si temp <= 99, ir a decenas
-;    
-;    ; Es >= 100
-;    MOVLW .1
-;    MOVWF digito2
-;    MOVLW .100
-;    SUBWF temp, F
-;
-;CALC_DECENAS
-;    ; CALCULAR DECENAS - método por bloques (tu aproximación)
-;    ; Se prueban 9,8,...,1 decenas y se resta la cantidad correspondiente
-;    MOVF temp, W
-;    SUBLW .89
-;    BTFSC STATUS, C
-;    GOTO CHECK_80   
-;    MOVLW .9
-;    MOVWF digito1
-;    MOVLW .90
-;    SUBWF temp, F
-;    GOTO CALC_UNIDADES
-;    
-;CHECK_80
-;    MOVF temp, W
-;    SUBLW .79
-;    BTFSC STATUS, C
-;    GOTO CHECK_70   
-;    MOVLW .8
-;    MOVWF digito1
-;    MOVLW .80
-;    SUBWF temp, F
-;    GOTO CALC_UNIDADES
-;    
-;CHECK_70
-;    MOVF temp, W
-;    SUBLW .69
-;    BTFSC STATUS, C
-;    GOTO CHECK_60   
-;    MOVLW .7
-;    MOVWF digito1
-;    MOVLW .70
-;    SUBWF temp, F
-;    GOTO CALC_UNIDADES
-;    
-;CHECK_60 
-;    MOVF temp, W
-;    SUBLW .59           
-;    BTFSC STATUS, C
-;    GOTO CHECK_50   
-;    MOVLW .6
-;    MOVWF digito1
-;    MOVLW .60
-;    SUBWF temp, F
-;    GOTO CALC_UNIDADES
-;    
-;CHECK_50
-;    MOVF temp, W
-;    SUBLW .49           
-;    BTFSC STATUS, C
-;    GOTO CHECK_40   
-;    MOVLW .5
-;    MOVWF digito1
-;    MOVLW .50
-;    SUBWF temp, F
-;    GOTO CALC_UNIDADES
-;    
-;CHECK_40 
-;    MOVF temp, W
-;    SUBLW .39           
-;    BTFSC STATUS, C
-;    GOTO CHECK_30   
-;    MOVLW .4
-;    MOVWF digito1
-;    MOVLW .40
-;    SUBWF temp, F
-;    GOTO CALC_UNIDADES
-;    
-;CHECK_30 
-;    MOVF temp, W
-;    SUBLW .29           
-;    BTFSC STATUS, C
-;    GOTO CHECK_20   
-;    MOVLW .3
-;    MOVWF digito1
-;    MOVLW .30
-;    SUBWF temp, F
-;    GOTO CALC_UNIDADES
-;    
-;CHECK_20 
-;    MOVF temp, W
-;    SUBLW .19           
-;    BTFSC STATUS, C
-;    GOTO CHECK_10   
-;    MOVLW .2
-;    MOVWF digito1
-;    MOVLW .20
-;    SUBWF temp, F
-;    GOTO CALC_UNIDADES
-;    
-;CHECK_10 
-;    MOVF temp, W
-;    SUBLW .9           
-;    BTFSC STATUS, C
-;    GOTO  CALC_UNIDADES
-;    MOVLW .1
-;    MOVWF digito1
-;    MOVLW .10
-;    SUBWF temp, F
-;    GOTO CALC_UNIDADES
-;    
-;CALC_UNIDADES
-;    ; CALCULAR UNIDADES - lo que queda en temp
-;    MOVF temp, W
-;    MOVWF digito0
-;    
-;    RETURN
- 
+    VERIFICARP
+    MOVF ADC1,W
+    SUBLW .150
+    BTFSC STATUS,C
+    GOTO P4
+    GOTO P2
+    
+    P0
+    MOVF SP,W
+    SUBLW .10
+    BTFSC STATUS,C
+    GOTO SETP0
+    BTFSS STATUS,C
+    BCF PORTC,4
+    CALL ESPERA20
+    RETURN
+    
+    SETP0
+    BSF PORTC,4
+    GOTO P0
+    
+    P1
+    MOVF SP,W
+    SUBLW .8
+    BTFSC STATUS,C
+    GOTO SETP1
+    BTFSS STATUS,C
+    BCF PORTC,4
+    CALL ESPERA20
+    RETURN
+    
+    SETP1
+    BSF PORTC,4
+    GOTO P1
+    
+    P2
+    MOVF SP,W
+    SUBLW .6
+    BTFSC STATUS,C
+    GOTO SETP2
+    BTFSS STATUS,C
+    BCF PORTC,4
+    CALL ESPERA20
+    RETURN
+    
+    SETP2
+    BSF PORTC,4
+    GOTO P2
+    
+    P3
+    MOVF SP,W
+    SUBLW .4
+    BTFSC STATUS,C
+    GOTO SETP3
+    BTFSS STATUS,C
+    BCF PORTC,4
+    CALL ESPERA20
+    RETURN
+    
+    SETP3
+    BSF PORTC,4
+    GOTO P3
+    
+    P4
+    MOVF SP,W
+    SUBLW .12
+    BTFSC STATUS,C
+    GOTO SETP4
+    BTFSS STATUS,C
+    BCF PORTC,4
+    CALL ESPERA20
+    RETURN
+    
+    SETP4
+    BSF PORTC,4
+    GOTO P4
+    
+    ESPERA20
+    SUBLW .80
+    BTFSS STATUS,Z
+    GOTO ESPERA20
+    CLRF SP
+    RETURN
     
 ; ======================
 ; TABLAS
@@ -539,5 +407,30 @@ RET_1MS_LOOP
     DECFSZ temp, F
     GOTO RET_1MS_LOOP
     RETURN
+    
+DELAY5S
+    MOVLW   .250
+    MOVWF   temp
+RET_5S_LOOP
+    DECFSZ  temp, F
+    GOTO    RET_5S_LOOP
+    MOVLW   .250
+    MOVWF   temp
+    DECFSZ  temp, F
+    GOTO    $-4        
+    MOVLW   .250
+    MOVWF   temp
+    DECFSZ  temp, F
+    GOTO    $-4
+    MOVLW   .250
+    MOVWF   temp
+    DECFSZ  temp, F
+    GOTO    $-4
+    MOVLW   .250
+    MOVWF   temp
+    DECFSZ  temp, F
+    RETURN
+    
+
 
     END
