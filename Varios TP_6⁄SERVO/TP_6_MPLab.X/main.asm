@@ -25,6 +25,7 @@ ADC3	     EQU 0X28	 ; Valor digital de RB4 --> LDR3
 P_DI	     EQU 0X29    ; Variable para determinar si me muevo a la derecha o izquierda
 P_UD	     EQU 0X30	 ; Variable para determinar si me muevo arriba o abajo
 DIFF	     EQU 0X31    ; Variable para analizar la diferencia de los resultados del ADC 
+temp	     EQU 0x32    ; Variable de los retardos
 
 W_TEMP       EQU 0x70	 ; CONTEXTO
 STATUS_TEMP  EQU 0x71	 ; CONTEXTO
