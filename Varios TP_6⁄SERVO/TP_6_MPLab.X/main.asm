@@ -66,8 +66,8 @@ INICIO
     CLRF ADCON1		 ; Sigo en banco 1, voltajes de referencia PIC, Justificación IZQUIERDA (ADRESH)
     
     BANKSEL ADCON0	 ; Banco 0
-    MOVLW b'00101011'	  
-    MOVWF ADCON0	 ; Habilito ADC, GO/DONDE, Arranco convirtiendo RB1 (AN10), FOSC/2
+    MOVLW b'00101001'	  
+    MOVWF ADCON0	 ; Habilito ADC, GO/DONE DESHABILITADO, Arranco convirtiendo RB1 (AN10), FOSC/2
     
     ;TMR0
     BANKSEL TRISC        ; Banco 1 
@@ -251,22 +251,22 @@ INICIO
     RETURN			    ;GO/DONE = 0, terminó la conversión, vuelvo al LOOP_PRINCIPAL
     
     SELECCIONAR_AN10
-    MOVLW b'00101011'		    ;B2-B5 seleccionan que AN se convierte (ver datasheet)
+    MOVLW b'00101001'		    ;B2-B5 seleccionan que AN se convierte (ver datasheet)
     MOVWF ADCON0
     RETURN
     
     SELECCIONAR_AN8
-    MOVLW b'00100011'
+    MOVLW b'00100001'
     MOVWF ADCON0
     RETURN
     
     SELECCIONAR_AN9
-    MOVLW b'00100111'
+    MOVLW b'00100101'
     MOVWF ADCON0
     RETURN
     
     SELECCIONAR_AN11
-    MOVLW b'00101111'
+    MOVLW b'00101101'
     MOVWF ADCON0
     RETURN
     
