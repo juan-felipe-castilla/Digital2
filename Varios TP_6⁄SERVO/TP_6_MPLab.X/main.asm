@@ -22,8 +22,8 @@ ADC0	     EQU 0X25    ; Valor digital de RB1 --> LDR0
 ADC1	     EQU 0X26	 ; Valor digital de RB2 --> LDR1   
 ADC2	     EQU 0X27	 ; Valor digital de RB3 --> LDR2
 ADC3	     EQU 0X28	 ; Valor digital de RB4 --> LDR3
-P-DI	     EQU 0X29    ; Variable para determinar si me muevo a la derecha o izquierda
-P-UD	     EQU 0X30	 ; Variable para determinar si me muevo arriba o abajo
+P_DI	     EQU 0X29    ; Variable para determinar si me muevo a la derecha o izquierda
+P_UD	     EQU 0X30	 ; Variable para determinar si me muevo arriba o abajo
 DIFF	     EQU 0X31    ; Variable para analizar la diferencia de los resultados del ADC 
 
 W_TEMP       EQU 0x70	 ; CONTEXTO
@@ -88,7 +88,10 @@ INICIO
     CLRF ADC0	    
     CLRF ADC1	        
     CLRF ADC2	
-    CLRF ADC3	
+    CLRF ADC3
+    CLRF DIFF
+    CLRF P_DI
+    CLRF P_UD
     
     CLRF PORTC
     CLRF PORTD
@@ -134,7 +137,7 @@ INICIO
     MOVF ADRESH, W
     MOVWF ADC3
     
-    CALL VERIFICAR_DI
+    CALL VERIFICAR_DI			;De esta rutina, se vuelve con la posición en P_DI que corresponde en el servo del eje x.
     
     
 ;    ;Convertir valor ADC a dígitos
@@ -172,6 +175,7 @@ INICIO
     MOVLW .178
     MOVWF TMR0				;Precargo TMR0 con .178 para la proxima interrrupción
     BCF INTCON, T0IF
+    RETURN
     
 ;    ; Multiplexado de displays
 ;    CALL MULTIPLEXAR
