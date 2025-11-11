@@ -22,6 +22,9 @@ ADC0	     EQU 0X25    ; Valor digital de RB1 --> LDR0
 ADC1	     EQU 0X26	 ; Valor digital de RB2 --> LDR1   
 ADC2	     EQU 0X27	 ; Valor digital de RB3 --> LDR2
 ADC3	     EQU 0X28	 ; Valor digital de RB4 --> LDR3
+P-DI	     EQU 0X29    ; Variable para determinar si me muevo a la derecha o izquierda
+P-UD	     EQU 0X30	 ; Variable para determinar si me muevo arriba o abajo
+DIFF	     EQU 0X31    ; Variable para analizar la diferencia de los resultados del ADC 
 
 W_TEMP       EQU 0x70	 ; CONTEXTO
 STATUS_TEMP  EQU 0x71	 ; CONTEXTO
@@ -51,8 +54,8 @@ INICIO
     ;PORTD, PORTC
     BANKSEL TRISD        ; Banco 1
     CLRF TRISD           ; PORTD como salida (displays)
-    MOVLW b'11110000'    
-    MOVWF TRISC		 ; RC0-RC3 como salida digital (multiplexado) - FALTA DEFINIR COMUNICACION SERIE.
+    MOVLW b'11000000'    
+    MOVWF TRISC		 ; RC0-RC3 como salida digital (multiplexado), RC4,5 como salida digital (Servos) - FALTA DEFINIR COMUNICACION SERIE.
     
     
 ; ======================
@@ -102,9 +105,37 @@ INICIO
 ; LOOP PRINCIPAL   
 ; ======================
     LOOP_PRINCIPAL
-    ;Leer ADC
-    CALL LEER_ADC
+    BANKSEL ADCON0			;Banco 0, tambien donde tengo las variables de cada LDR, no hace falta moverse
+    ;Canal RB1 (AN10)
+    CALL SELECCIONAR_AN10
+    CALL INICIAR_CONVERSION
+    CALL ESPERAR_CONVERSION
     
+    MOVF ADRESH, W			;Justificación izquierda, solo tomamos los 8 bits mas significativos de los 10.
+    MOVWF ADC0
+
+    ;Canal RB2 (AN8)
+    CALL SELECCIONAR_AN8
+    CALL INICIAR_CONVERSION
+    CALL ESPERAR_CONVERSION
+    MOVF ADRESH, W
+    MOVWF ADC1
+
+    ;Canal RB3 (AN9)
+    CALL SELECCIONAR_AN9
+    CALL INICIAR_CONVERSION
+    CALL ESPERAR_CONVERSION
+    MOVF ADRESH, W
+    MOVWF ADC2
+
+    ;Canal RB4 (AN11)
+    CALL SELECCIONAR_AN11
+    CALL INICIAR_CONVERSION
+    CALL ESPERAR_CONVERSION
+    MOVF ADRESH, W
+    MOVWF ADC3
+    
+    CALL VERIFICAR_DI
     ;Convertir valor ADC a dígitos
     CALL CONVERTIR_DIGITOS
     
@@ -137,8 +168,8 @@ INICIO
 ; ==========================    
 ;Subrutina TMR0
     TIMER_ISR
-    MOVLW .100
-    MOVWF TMR0
+    MOVLW .178
+    MOVWF TMR0				;Precargo TMR0 con .178 para la proxima interrrupción
     BCF INTCON, T0IF
     
     ; Multiplexado de displays
@@ -204,7 +235,40 @@ FIN_MOSTRAR
 ; =============================
 ; SUBRUTINAS DE LOOP PRINCIPAL
 ; =============================  
-;Leer ADC
+    INICIAR_CONVERSION
+    BSF ADCON0,1		    ;Activo GO/DONE, arranca la conversión
+    RETURN
+    
+    ESPERAR_CONVERSION		    
+    BTFSC ADCON0,1
+    GOTO ESPERAR_CONVERSION	    ;GO/DONE = 1, no terminó la conversión, vuelvo al loop
+    RETURN			    ;GO/DONE = 0, terminó la conversión, vuelvo al LOOP_PRINCIPAL
+    
+    SELECCIONAR_AN10
+    MOVLW b'00101011'		    ;B2-B5 seleccionan que AN se convierte (ver datasheet)
+    MOVWF ADCON0
+    RETURN
+    
+    SELECCIONAR_AN8
+    MOVLW b'00100011'
+    MOVWF ADCON0
+    RETURN
+    
+    SELECCIONAR_AN9
+    MOVLW b'00100111'
+    MOVWF ADCON0
+    RETURN
+    
+    SELECCIONAR_AN11
+    MOVLW b'00101111'
+    MOVWF ADCON0
+    RETURN
+    
+    VERIFICAR_DI
+    MOVF ADC1,W
+    SUBWF ADC0,DIFF			    ; DIFF = ADC0 - ADC1
+    BT
+    ;Leer ADC
 LEER_ADC
     BANKSEL ADCON0
     ; Esperar a que no haya conversión en curso (GO/DONE = 0)
