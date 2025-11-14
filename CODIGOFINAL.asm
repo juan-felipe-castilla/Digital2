@@ -29,6 +29,7 @@ temp        EQU 0x32    ; Variable de los retardos
 SP          EQU 0X33    ; Posicion
 valor_adc_raw EQU  0X27
 temp_retardo  EQU  0x28	;NUEVOOOOO
+PCS	    EQU 0X36
 
 	  ;NUEVAS VARIABLES
 VALOR_A_IZQ_LEVE  EQU .12   ; Índice para 'A'
@@ -41,6 +42,25 @@ W_TEMP      EQU 0x70    ; CONTEXTO
 STATUS_TEMP EQU 0x71    ; CONTEXTO
   
 INICIO
+;CONFIGURACION PUERTOS COMUNCIACION SERIE
+   BANKSEL TRISD       ; Banco 1
+   MOVLW b'10000000'   
+   MOVWF TRISC         ; TRISC Configurado para comunicacion serie
+
+   BANKSEL TXSTA
+   BSF TXSTA, TXEN     ; Habilita TX
+   BCF TXSTA, SYNC     ; Modo asíncrono
+   BSF TXSTA, BRGH     ; Alta velocidad
+
+   BANKSEL RCSTA
+   BSF RCSTA, SPEN     ; Habilita TX (y RX si se quisiera)
+
+   BANKSEL BAUDCTL
+   BCF BAUDCTL, BRG16  ; Baudrate de 8 bits
+
+   BANKSEL SPBRG 
+   MOVLW .25           ; 9600 baud @ 4MHz (BRGH=1)
+   MOVWF SPBRG
 ; ======================
 ; Configuracion de Puertos  
 ; ======================
@@ -55,17 +75,8 @@ INICIO
  
   ;PORTB
     BANKSEL SRCON       ; Banco 3
-    MOVLW b'01111111'   
-    MOVWF TRISB         ; RB0 entrada (pulsador), RB1,2,3,4 entradas (LDR)
-    MOVLW b'00001111'
-    MOVWF ANSELH        ; RB1,2,3,4 analógicos
-    CLRF  ANSELH         ; Resto de PORTB en digital
-    
-    ;PORTD, PORTC
-    BANKSEL TRISD       ; Banco 1
-    CLRF TRISD          ; PORTD como salida (displays)
-    MOVLW b'11000000'   
-    MOVWF TRISC         ; RC0-RC3 como salida (multiplexado), RC4,5 como salida (Servos)
+    MOVLW b'00000001'   
+    MOVWF TRISB         ; RB0 entrada (pulsador), el resto salidas (PORTB MULTIPLEXADO) RB1,2,3,4 "MUX"
     
 ; ======================
 ; Interrupciones, ADC, TMR0    
@@ -79,12 +90,15 @@ INICIO
     
     ;TMR0
     BANKSEL TRISC       ; Banco 1  
-    MOVLW B'10000000'   
+    MOVLW B'00000000'   
     MOVWF OPTION_REG    ; Prescaler 1:256 para Timer0, fuente interna
+    
+    BANKSEL WPUB
+    BSF WPUB,0
  
     ;INTERRUPCIONES
-    MOVLW b'10101000'
-    MOVWF INTCON        ; Habilito interrupciones por cambios en PORTB y de TMR0.
+    MOVLW b'10110000'
+    MOVWF INTCON        ; Habilito interrupciones EXTERNA RB0 y TMR0.
     
     BANKSEL PORTA       ; Banco 0
     
@@ -100,6 +114,7 @@ INICIO
     CLRF P_DI
     CLRF SP
     CLRF CONTISR
+    CLRF PCS
     
     CLRF PORTC
     MOVLW b'00111111'
@@ -117,6 +132,7 @@ INICIO
 ; LOOP PRINCIPAL    
 ; ======================
 LOOP_PRINCIPAL
+    BSF PORTB,0
     BANKSEL ADCON0          ;Banco 0
     ;Canal RB1 (AN0)
     CALL SELECCIONAR_AN0
@@ -124,7 +140,7 @@ LOOP_PRINCIPAL
     CALL ESPERAR_CONVERSION     
     MOVF ADRESH, W          
     MOVWF ADC0
-    
+    BSF PORTB,0
     ;Canal RB2 (AN1)
     CALL SELECCIONAR_AN1
     CALL INICIAR_CONVERSION
@@ -211,6 +227,8 @@ ISR
     
     BTFSC INTCON, T0IF
     CALL TIMER_ISR
+    BTFSC INTCON, INTF
+    CALL COM_SERIE
     
     SWAPF STATUS_TEMP, W
     MOVWF STATUS
@@ -230,7 +248,50 @@ TIMER_ISR
     INCF SP
     INCF CONTISR
     RETURN
+    
+COM_SERIE
+   BCF  INTCON, INTF
+   CALL CARGAR_POSICION
+   CALL TABLE_OUT_SERIAL   ; -> ASCII en W
+   CALL UART_TX
+   RETURN
 
+CARGAR_POSICION
+    MOVF P_DI, W
+    SUBLW .13		;VERIFICO P0 (DEBERIA SER P0, NO LO ES EN REALIDAD)
+    BTFSC STATUS,Z
+    GOTO PONERP0
+    MOVF P_DI,W
+    SUBLW .12		;VERIFICO P1
+    BTFSC STATUS,Z
+    GOTO PONERP1
+    MOVF P_DI,W
+    SUBLW .14		;VERIFICO P2
+    BTFSC STATUS,Z
+    GOTO PONERP2
+    GOTO PONERP3
+    
+PONERP0
+    MOVLW .0
+    RETURN
+PONERP1
+    MOVLW .1
+    RETURN
+PONERP2
+    MOVLW .2
+    RETURN
+PONERP3
+    MOVLW .3
+    RETURN
+    
+UART_TX
+   BANKSEL TXSTA
+WAIT_TX
+   BTFSS TXSTA, TRMT
+   GOTO WAIT_TX
+   BANKSEL TXREG
+   MOVWF TXREG
+   RETURN
     
 ; =============================
 ; SUBRUTINAS DE LOOP PRINCIPAL
@@ -418,7 +479,19 @@ TABLA_MUX
     RETLW b'00000010'    ; Display 2 (RC1) -> LDR 2
     RETLW b'00000100'    ; Display 3 (RC2) -> INDICADOR
     RETLW b'00001000'    ; Display 4 (RC3) -> Apagado
-
+    
+TABLE_OUT_SERIAL
+   ADDWF PCL, F
+   RETLW '0'
+   RETLW '1'
+   RETLW '2'
+   RETLW '3'
+   RETLW '4'
+   RETLW '5'
+   RETLW '6'
+   RETLW '7'
+   RETLW '8'
+   RETLW '9'
     
 ; ======================
 ; Retardos
