@@ -1,0 +1,99 @@
+;*** Directivas de Inclusi?n ***    
+LIST P=16F887                
+#include "p16f887.inc"
+
+;**** Configuraci?n General ****    
+__CONFIG _CONFIG1, _XT_OSC & _WDTE_OFF & _MCLRE_ON & _LVP_OFF    
+    
+;**** Definici?n de Variables ****
+CBLOCK 0x20
+   W_TEMP
+   STATUS_TEMP
+   COUNTER_ENTEX
+   COUNTER
+ENDC  
+
+;*** Vectores de Reset e Interrupci?n ***
+ORG 0x00
+GOTO INICIO
+ORG 0x04
+GOTO ISR_INICIO
+ORG 0x05
+
+CFG_SERIAL MACRO
+   BANKSEL TRISC
+   BCF 	TRISC, 6  ; Configura RC6 (TX) como salida
+   BSF 	TRISC, 7  ; Configura RC7 (RX) como entrada
+   BANKSEL TXSTA
+   BSF TXSTA, TXEN ; Transmision Habilitada 
+   BCF TXSTA, SYNC ; Transmicion Asincrona
+   BSF TXSTA, BRGH ; Transmicion Asincrona de Alta velocidad
+   BANKSEL RCSTA
+   BSF RCSTA, SPEN ; RX-TX puertos seriales
+   BANKSEL BAUDCTL
+   BCF BAUDCTL, BRG16 ; Generador serial de 8 bits
+   BANKSEL SPBRG 
+   MOVLW D'25'
+   MOVWF SPBRG
+ENDM
+   
+CFG_TMR0 MACRO
+   BANKSEL INTCON
+   BSF INTCON, T0IE ; HABILITAR INTERRUPCIONES EXTERNAS
+   BCF INTCON, T0IF ; FLAG en 0
+ENDM
+;==============================================================
+; PROGRAMA PRINCIPAL
+;==============================================================
+INICIO    
+   CFG_TMR0
+   CFG_SERIAL
+   BANKSEL INTCON
+   BSF INTCON, GIE
+   GOTO $
+   
+ISR_INICIO
+   MOVWF W_TEMP
+   SWAPF STATUS, W
+   MOVWF STATUS_TEMP ; Guardado de contexto
+   
+   BTFSS INTCON, T0IF ; PREGUNTAR POR INTERRUPCION EXTERNA SI LO ES
+   GOTO ISR_FIN
+   GOTO ISR_INTEX
+   
+ISR_FIN
+   SWAPF STATUS_TEMP,W
+   MOVWF STATUS
+   SWAPF W_TEMP,F
+   SWAPF W_TEMP,W ; Restauracion de Contexto
+   RETFIE ; retorna de ISR
+   
+ISR_INTEX
+   DECREMENTARSKIP0 COUNTER_INTEX ; CONTADOR PARA NO SATURAR BUS, MAÑNA VER CON BENJ
+   GOTO ISR_INTEX
+   MOVLW .80
+   MOVWF COUNTER_INTEX
+   GOTO SERIAL_OUT
+   
+SERIAL_OUT
+
+   MOVWF POSICION ; ACA CREO Q HABRIA Q PONER NUESTRO VALOR CONTEMPLANDO POSICION DE LA 0 A LA 3
+   CALL TABLE_OUT_SERIAL TABLA QUE COMBIERTA VALOR A 0 
+   CALL UART_TX
+   GOTO ISR_FIN
+   
+TABLE_OUT_SERIAL
+   ADDWF PCL,F
+   RETLW D'30' ; 0
+   RETLW D'31' ; 1
+   RETLW D'32' ; 2
+   RETLW D'33' ; 3
+
+  
+UART_TX 
+   BTFSS TXSTA, TRMT
+   GOTO UART_TX
+   MOVWF TXREG
+   RETURN
+   
+END
