@@ -43,9 +43,11 @@ STATUS_TEMP EQU 0x71    ; CONTEXTO
   
 INICIO
 ;CONFIGURACION PUERTOS COMUNCIACION SERIE
-   BANKSEL TRISD       ; Banco 1
-   MOVLW b'10000000'   
-   MOVWF TRISC         ; TRISC Configurado para comunicacion serie
+   BANKSEL TRISC       ; Banco 1
+   BCF TRISC, 6  ; TX salida
+   BSF TRISC, 7  ; RX entrada
+   BCF TRISC, 5
+   
 
    BANKSEL TXSTA
    BSF TXSTA, TXEN     ; Habilita TX
@@ -56,11 +58,13 @@ INICIO
    BSF RCSTA, SPEN     ; Habilita TX (y RX si se quisiera)
 
    BANKSEL BAUDCTL
-   BCF BAUDCTL, BRG16  ; Baudrate de 8 bits
+   BCF BAUDCTL, 3  ; Baudrate de 8 bits
 
    BANKSEL SPBRG 
    MOVLW .25           ; 9600 baud @ 4MHz (BRGH=1)
    MOVWF SPBRG
+
+   
 ; ======================
 ; Configuracion de Puertos  
 ; ======================
@@ -74,9 +78,11 @@ INICIO
     CLRF ANSELH          ; Resto de pines digitales
  
   ;PORTB
-    BANKSEL SRCON       ; Banco 3
+    BANKSEL TRISB       ; Banco 3
     MOVLW b'00000001'   
     MOVWF TRISB         ; RB0 entrada (pulsador), el resto salidas (PORTB MULTIPLEXADO) RB1,2,3,4 "MUX"
+    
+    CLRF TRISD          ;PORTD COMO SALIDA
     
 ; ======================
 ; Interrupciones, ADC, TMR0    
@@ -85,15 +91,13 @@ INICIO
     CLRF ADCON1         ; Sigo en banco 1, Justificación IZQUIERDA (ADRESH)
     
     BANKSEL ADCON0      ; Banco 0
-    MOVLW b'01101001'   
-    MOVWF ADCON0        ; Habilito ADC, GO/DONE DESHABILITADO, Arranco convirtiendo RB1 (AN10), FOSC/2
+    MOVLW b'01000001'   
+    MOVWF ADCON0        ; Habilito ADC, GO/DONE DESHABILITADO
     
     ;TMR0
     BANKSEL TRISC       ; Banco 1  
     MOVLW B'00000000'   
     MOVWF OPTION_REG    ; Prescaler 1:256 para Timer0, fuente interna
-    
-    BANKSEL WPUB
     BSF WPUB,0
  
     ;INTERRUPCIONES
@@ -115,13 +119,13 @@ INICIO
     CLRF SP
     CLRF CONTISR
     CLRF PCS
+    CLRF PORTB
     
-    CLRF PORTC
     MOVLW b'00111111'
     MOVWF PORTD		;PORTD Siempre muestra un "0", el cual usaremos para indicar en los display en que posicion se encuentra (cambiamos solo el transistor)
     
     MOVLW .125
-    MOVWF TMR0          ; Precargo TMR0 con 125, PS 1:256, Interrumpe cada aprox. 20mS
+    MOVWF TMR0          ; Precargo TMR0 con 125, PS 1:256, Interrumpe cada aprox. .25mS
     
     CALL RETARDO_1MS    ; Espera ADC
     
@@ -132,7 +136,6 @@ INICIO
 ; LOOP PRINCIPAL    
 ; ======================
 LOOP_PRINCIPAL
-    BSF PORTB,0
     BANKSEL ADCON0          ;Banco 0
     ;Canal RB1 (AN0)
     CALL SELECCIONAR_AN0
@@ -140,7 +143,8 @@ LOOP_PRINCIPAL
     CALL ESPERAR_CONVERSION     
     MOVF ADRESH, W          
     MOVWF ADC0
-    BSF PORTB,0
+;    BSF PORTB,0
+    
     ;Canal RB2 (AN1)
     CALL SELECCIONAR_AN1
     CALL INICIAR_CONVERSION
@@ -148,14 +152,13 @@ LOOP_PRINCIPAL
     MOVF ADRESH, W
     MOVWF ADC1
     
-    
-   ;  -------------------------------------------------------
+    ; -------------------------------------------------------
     ; PROCESAR ADC0 (LDR Izquierdo)
     ; -------------------------------------------------------
     MOVF ADC0, W            ; Cargar valor de ADC0 en W
     MOVWF valor_adc_raw     ; Moverlo a la variable que usa la subrutina
     CALL CALCULAR_CUADRANTE ; Llamar a la rutina
-    MOVWF RESP0                ; Guardar el resultado (0-3) en d0
+    MOVWF RESP0             ; Guardar el resultado (0-3) en d0
     
     ; -------------------------------------------------------
     ; PROCESAR ADC1 (LDR Derecho)
@@ -165,13 +168,10 @@ LOOP_PRINCIPAL
     CALL CALCULAR_CUADRANTE ; Reutilizar la misma rutina
     MOVWF RESP1 
     
- 
-    
     ; 1. Calcular Diferencia: LDR_DIFF = LDR1 - LDR2
     MOVF RESP1, W
-    SUBWF RESP0, W    ; W = LDR1 - LDR2
+    SUBWF RESP0, W    ; W = LDR1 - LDR0
     MOVWF DIFF
-
     
     ; 2. Chequear si es Cero (Zona Muerta)
     BTFSC STATUS, Z         ; 
@@ -214,7 +214,10 @@ LOOP_PRINCIPAL
     
     CALL VERIFICARP
     
-    GOTO LOOP_PRINCIPAL
+  
+    
+    GOTO LOOP_PRINCIPAL 
+    
     
     
 ; ======================
@@ -225,10 +228,12 @@ ISR
     SWAPF STATUS, W
     MOVWF STATUS_TEMP
     
-    BTFSC INTCON, T0IF
-    CALL TIMER_ISR
+  
     BTFSC INTCON, INTF
     CALL COM_SERIE
+    BTFSC INTCON, T0IF
+    CALL TIMER_ISR
+   
     
     SWAPF STATUS_TEMP, W
     MOVWF STATUS
@@ -250,13 +255,12 @@ TIMER_ISR
     RETURN
     
 COM_SERIE
-   BCF  INTCON, INTF
-   CALL CARGAR_POSICION
-   CALL TABLE_OUT_SERIAL   ; -> ASCII en W
-   CALL UART_TX
-   RETURN
-
+    BCF INTCON, INTF
+    CALL CARGAR_POSICION
+    RETURN
+    
 CARGAR_POSICION
+    CALL RETARDO_100US
     MOVF P_DI, W
     SUBLW .13		;VERIFICO P0 (DEBERIA SER P0, NO LO ES EN REALIDAD)
     BTFSC STATUS,Z
@@ -271,27 +275,24 @@ CARGAR_POSICION
     GOTO PONERP2
     GOTO PONERP3
     
+;    
 PONERP0
-    MOVLW .0
+    MOVLW '0'
+    MOVWF TXREG
     RETURN
 PONERP1
-    MOVLW .1
+    MOVLW '1'
+    MOVWF TXREG
     RETURN
 PONERP2
-    MOVLW .2
+    MOVLW '2'
+    MOVWF TXREG
     RETURN
 PONERP3
-    MOVLW .3
+    MOVLW '3'
+    MOVWF TXREG
     RETURN
     
-UART_TX
-   BANKSEL TXSTA
-WAIT_TX
-   BTFSS TXSTA, TRMT
-   GOTO WAIT_TX
-   BANKSEL TXREG
-   MOVWF TXREG
-   RETURN
     
 ; =============================
 ; SUBRUTINAS DE LOOP PRINCIPAL
@@ -349,7 +350,7 @@ VERIFICARP
 ; --- RUTINAS DE SERVO CORREGIDAS PARA USAR RC5 ---
 P0
     MOVF SP,W
-    SUBLW .9
+    SUBLW .8
     BTFSC STATUS,C
     GOTO SETP0
     BTFSS STATUS,C
@@ -363,7 +364,7 @@ SETP0
     
 P1
     MOVF SP,W
-    SUBLW .7
+    SUBLW .6
     BTFSC STATUS,C
     GOTO SETP1
     BTFSS STATUS,C
@@ -377,7 +378,7 @@ SETP1
     
 P2
     MOVF SP,W
-    SUBLW .5
+    SUBLW .4
     BTFSC STATUS,C
     GOTO SETP2
     BTFSS STATUS,C
@@ -391,7 +392,7 @@ SETP2
     
 P3
     MOVF SP,W
-    SUBLW .3
+    SUBLW .2
     BTFSC STATUS,C
     GOTO SETP3
     BTFSS STATUS,C
@@ -425,29 +426,33 @@ PRENDERLED
     BTFSC STATUS,Z
     GOTO DECIDOMUX2
     GOTO DECIDOMUX3
-  
     
-    ;FALTA DECIDIR Y VER COMO MANDAR EL MULTIPLEXADO (POR AHORA PORTB)
+  
 DECIDOMUX0
-    MOVLW .0
-    CALL TABLA_MUX
-    MOVWF PORTB
+    BSF PORTB,1
+    BCF PORTB,2
+    BCF PORTB,3
+    BCF PORTB,4
     RETURN
 DECIDOMUX1
-    MOVLW .1
-    CALL TABLA_MUX
-    MOVWF PORTB
+    BCF PORTB,1
+    BSF PORTB,2
+    BCF PORTB,3
+    BCF PORTB,4
     RETURN
 DECIDOMUX2
-    MOVLW .2
-    CALL TABLA_MUX
-    MOVWF PORTB
+    BCF PORTB,1
+    BCF PORTB,2
+    BSF PORTB,3
+    BCF PORTB,4
     RETURN
 DECIDOMUX3
-    MOVLW .3
-    CALL TABLA_MUX
-    MOVWF PORTB
+    BCF PORTB,1
+    BCF PORTB,2
+    BCF PORTB,3
+    BSF PORTB,4
     RETURN
+  
     
 ; ======================
 ; TABLAS
@@ -472,13 +477,13 @@ TABLA_D
     RETLW b'00111001'    ; 14 - 'C' (Derecha Leve)
     RETLW b'01011110'    ; 15 - 'd' (Derecha Fuerte)
 
-;Tabla de multiplexado
-TABLA_MUX
-    ADDWF PCL, F
-    RETLW b'00000001'    ; Display 1 (RC0) -> LDR 1
-    RETLW b'00000010'    ; Display 2 (RC1) -> LDR 2
-    RETLW b'00000100'    ; Display 3 (RC2) -> INDICADOR
-    RETLW b'00001000'    ; Display 4 (RC3) -> Apagado
+;;Tabla de multiplexado
+;TABLA_MUX
+;    ADDWF PCL, F
+;    RETLW b'00000001'    ; Display 1 (RC0) -> LDR 1
+;    RETLW b'00000010'    ; Display 2 (RC1) -> LDR 2
+;    RETLW b'00000100'    ; Display 3 (RC2) -> INDICADOR
+;    RETLW b'00001000'    ; Display 4 (RC3) -> Apagado
     
 TABLE_OUT_SERIAL
    ADDWF PCL, F
