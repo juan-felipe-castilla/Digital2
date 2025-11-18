@@ -31,7 +31,8 @@ Se implementa un PIC16F887 que ajusta la posición de un servomotor, en relació
 El montaje en primera instancia fue realizado integramente en protoboard, luego de esto implementamos un "modulo" realizado en una placa experimental el cual se encargaba del control y polarización del módulo de 7 segmentos, este siendo practiamente indispensable para montarlo en un chasis, ya que en protoboard no teniamos forma de que el mismo se vea de la externa.
 La imagen adjunta es del montaje en protoboard y ese módulo mencionado, el mismo está realizado completamente con cables macho-macho, por eso se ve un poco desprolijo, tenemos intenciones de en un futuro, poder realizar las placas impresas, las cuales se encuentran el repositorio, son funcionales, pero por temas de no poseer las herramientas adecuadas, traian más problemas q soluciones.
 
-![Montaje en protoboard](Varios%20TP_6⁄SERVO/montaje.jpeg)
+![Montaje en protoboard](Varios%20TP_6/SERVO/montaje.jpeg)
+
 
 ### 5. Diagramas
 
