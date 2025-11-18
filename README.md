@@ -14,7 +14,7 @@ El sistema se basa en la comparación de la intensidad lumínica detectada por d
 
 #### 2.2. Arquitectura de Control
 
-Se implementa un PIC16F887 que ajusta la posición de los servomotores en función de la entrada analógica de los sensores, buscando mantener el diferencial de luz en un valor cercano a cero.
+Se implementa un PIC16F887 que ajusta la posición de un servomotor, en relación a las LDR conectadas, el mismo modula el pulso de salida en relación a la diferencia de potencial entre las resistencias variables.
 
 ### 3. Componentes de Hardware y Software
 
@@ -22,15 +22,17 @@ Se implementa un PIC16F887 que ajusta la posición de los servomotores en funci�
 | :--- | :--- | :--- |
 | **Microcontrolador** | PIC16f887 | Plataforma de desarrollo principal para procesar las lecturas y controlar los actuadores. |
 | **Sensores** | Resistencias LDR (x2) | Utilizadas para detectar la intensidad lumínica y el diferencial de luz. |
-| **Actuadores** | Servomotores (x1) | Para el eje horizontal 
-| **Otros** | Resistencias (10kΩ), Cables de conexión, Protoboard, Estructura de soporte, Displays | Elementos esenciales para el montaje y la circuitería. |
-| **Software** | **MPLAB** | Entorno de desarrollo para la programación y carga del código. |
+| **Actuadores** | Servomotores (x1) | Para el eje vertical 
+| **Otros** | Resistencias (10kΩ), Cables de conexión, Protoboard, Estructura de soporte, Display de 7 segmentos, placas experimentales, componentes pertinentes para la configuración y optimo funcionamiento de microcontrolador.
+| **Software** | **MPLAB y AN1310** | Entorno de desarrollo para la programación y carga del código. |
 | **Lenguaje** | **ASSEMBLER** Lenguaje de programación utilizado para implementar la lógica de control. |
 
 ### 4. Montaje e Instalación
+El montaje en primera instancia fue realizado integramente en protoboard, luego de esto implementamos un "modulo" realizado en una placa experimental el cual se encargaba del control y polarización del módulo de 7 segmentos, este siendo practiamente indispensable para montarlo en un chasis, ya que en protoboard no teniamos forma de que el mismo se vea de la externa.
+La imagen adjunta es del montaje en protoboard y ese módulo mencionado, el mismo está realizado completamente con cables macho-macho, por eso se ve un poco desprolijo, tenemos intenciones de en un futuro, poder realizar las placas impresas, las cuales se encuentran el repositorio, son funcionales, pero por temas de no poseer las herramientas adecuadas, traian más problemas q soluciones.
 
 
-### 5. Resultados y Demostración
+### 5. Diagramas
 
 
 
