@@ -61,6 +61,7 @@ Estas son Imagenes de los circuitos
 
 
 ### 5. Diagrama de Flujo del Código
+```mermaid
 flowchart TD
 
 %% ============================
@@ -173,7 +174,7 @@ subgraph CALC [CALCULAR_CUADRANTE]
 end
 
 
-
+```
 
 ### 6. Conclusión
 
