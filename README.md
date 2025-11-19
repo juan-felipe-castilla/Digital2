@@ -64,53 +64,26 @@ Estas son Imagenes de los circuitos
 ```mermaid
 flowchart TD
 
-    %% =================== INICIO ===================
-    A([RESET / Inicio]) --> B[Configurar TRISA, TRISB, ANSEL, ADCON0, ADCON1]
-    B --> C[Configurar UART (TXSTA, RCSTA, SPBRG)]
-    C --> D[Configurar Timer0 (OPTION_REG)]
-    D --> E[Configurar interrupciones (INTCON)]
-    E --> F[Inicializar variables: nconT, d0,d1,d2,d3, ADC0, ADC1, DIFF, P_DI, SP]
-    F --> G([Loop Principal])
+A[Inicio] --> B[Configurar puertos<br/>TRIS A y B]
+B --> C[Configurar UART solo TX<br/>TXSTA: habilitar TX<br/>RCSTA: habilitar puerto serie<br/>SPBRG: baudrate]
+C --> D[Posición inicial del servo<br/>Poner RB0 en nivel inicial]
 
-    %% =================== LECTURA ADC0 (AN0) ===================
-    G --> H[Seleccionar canal AN0]
-    H --> I[Iniciar conversión ADC]
-    I --> J[Esperar conversión terminada]
-    J --> K[Guardar ADC0 = ADRESH]
+D --> E[Leer LDR0 (canal ADC0)]
+E --> F[Leer LDR1 (canal ADC1)]
 
-    %% =================== LECTURA ADC1 (AN1) ===================
-    K --> L[Seleccionar canal AN1]
-    L --> M[Iniciar conversión ADC]
-    M --> N[Esperar conversión terminada]
-    N --> O[Guardar ADC1 = ADRESH]
+F --> G{LDR0 < LDR1?}
 
-    %% =================== CÁLCULOS ===================
-    O --> P[DIFF = ADC1 - ADC0]
+G -- Si --> H[Ejecutar rutina: Mover servo a la derecha]
+G -- No --> I[Ejecutar rutina: Mover servo a la izquierda]
 
-    %% =================== CONTROL DE LED ===================
-    P --> Q{ADC0 > UMBRAL?}
-    Q -- Si --> R[Encender LED]
-    Q -- No --> S[Apagar LED]
+H --> J[Transmitir por UART el valor LDR0]
+I --> K[Transmitir por UART el valor LDR1]
 
-    %% =================== CONTROL SERVO ===================
-    R --> T
-    S --> T
+J --> L[Retardo]
+K --> L
 
-    T --> U{DIFF > 0?}
-    U -- Si --> V[Incrementar posición Servo]
-    U -- No --> W[Decrementar posición Servo]
-
-    V --> X[Actualizar señal PWM]
-    W --> X[Actualizar señal PWM]
-
-    %% =================== TRANSMISIÓN TX ===================
-    X --> Y[Preparar byte para TX (valor DIFF o estado)]
-    Y --> Z[Enviar por UART: mover valor a TXREG]
-
-    %% =================== RETARDO ===================
-    Z --> AA[Retardo (Timer0 + contadores)]
-    AA --> G
-
+L --> M[Volver a iniciar ciclo]
+M --> D
 
 ```
 
