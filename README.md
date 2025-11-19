@@ -88,8 +88,10 @@ R-->S
 S-->T[Display]
 T-->U{INTF = 0?}
 U--Si-->V[Transimision Serie]
+V-->D
 U--No-->W[Servo Control]
 W-->D
+
 
 style M fill:#ccf,stroke:#333
 style N fill:#ccf,stroke:#333
