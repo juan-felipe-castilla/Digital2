@@ -70,10 +70,10 @@ flowchart TD
 
     C --> D(LOOP_PRINCIPAL)
     
-    D --> E[LDR0]
+    D --> E[LDR0: Leer ADC]
     E --> F[Almacenar ADC0]
     
-    F --> G[LDR1]
+    F --> G[LDR1: Leer ADC]
     G --> H[Almacenar ADC1]
 
     H --> I[Obtener Cuadrantes RESP0 y RESP1]
@@ -84,14 +84,14 @@ flowchart TD
     K -- Si --> D
     K -- No --> L{LDR0 Mayor?}
 
-    L -- Si --> M(LDR0_MAYOR)
-    L -- No --> N(LDR1_MAYOR)
+    L -- Si --> M(LDR0_MAYOR: IZQUIERDA)
+    L -- No --> N(LDR1_MAYOR: DERECHA)
 
-    M --> M1{|DIFF|=3?}
+    M --> M1{Diferencia = 3?}
     M1 -- Si --> M_F[P_DI = 'b' (IZQ Fuerte)]
     M1 -- No --> M_L[P_DI = 'A' (IZQ Leve)]
 
-    N --> N1{|DIFF|=3?}
+    N --> N1{Diferencia = 3?}
     N1 -- Si --> N_F[P_DI = 'd' (DER Fuerte)]
     N1 -- No --> N_L[P_DI = 'C' (DER Leve)]
 
@@ -100,8 +100,8 @@ flowchart TD
     N_L --> O
     N_F --> O
 
-    O --> P[Llamar PRENDERLED]
-    P --> Q[Llamar VERIFICARP]
+    O --> P[PRENDERLED]
+    P --> Q[VERIFICARP: Control Servo]
     Q --> D
     
     style Q fill:#f9f,stroke:#333
