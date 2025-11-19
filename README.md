@@ -101,6 +101,7 @@ style U fill:#f9f,stroke:#333
 ### 6. Conclusión
 
 El proyecto Seguidor de Sol cumplió con los objetivos planteados, demostrando la aplicación práctica de los conocimientos de la materia Digital 2 en el sensado (LDRs), el procesamiento de señales (Microcontrolador) y la actuación (Servomotores). La implementación de la lógica de control digital permite una respuesta eficiente a los cambios de la fuente de luz.
+En cuanto al factor humano, se puso mucho empeño en la realizacion de este trabajo, se gasto  mucha energia y recursos en realizar las placas de montaje y la utilizacion de una caja estanca como gabinete para que sea totalmente funcional,en el camino se cometieron errores y hubieron fallos de impresion, falta de herramientas y experiencia, sin embargo el objetivo se consiguio. Hacer esto en placa no es tan complicado, pero el tiempo y los intentos fallidos determino al equipo por entregarlo en placas de prueba, recomiendo fervientemente a quien intente realizar este proyecto, lo haga en placas de montaje. Desde ya, y por parte de todos los integrantes, terminamos muy satisfechos con el resultado y agradecemos la experienica ganada con este trabajo.
 
 ---
 
