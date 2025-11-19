@@ -60,7 +60,49 @@ Estas son Imagenes de los circuitos
 
 
 
-### 5. Diagramas
+### 5. Diagrama de Flujo del Código
+```mermaid
+flowchart TD
+
+%% === SETUP ===
+A([Inicio]) --> B[Configurar Puertos I/O]
+B --> C[Configurar ADC]
+C --> D[Configurar Timer0]
+D --> E[Configurar Interrupciones]
+E --> F([Loop Principal])
+
+%% === LOOP ===
+F --> G[Leer ADC0]
+G --> H[Leer ADC1]
+H --> I{ADC0 > ADC1?}
+
+%% === DECISIONES DEL SERVO ===
+I -- Sí --> J[Mover Servo →]
+I -- No --> K[Mover Servo ←]
+
+J --> L[Actualizar PWM]
+K --> L
+
+L --> F
+
+%% === INTERRUPCIONES ===
+E --> M[[INT0]]
+M --> N[Ejecutar VERIFICARP]
+N --> O([Retornar de Interrupción])
+
+E --> P[[Interrupción TMR0]]
+P --> Q[Incrementar contador]
+Q --> R[Chequear desbordes / flags]
+R --> S([Retornar de Interrupción])
+
+%% === ADC FUNCION ===
+G -.-> T[[Función ADC]]
+H -.-> T
+T --> U[Iniciar conversión]
+U --> V[Esperar fin de conversión]
+V --> W[Leer ADRESH/ADRESL]
+W --> X[Retornar valor]
+
 
 
 
