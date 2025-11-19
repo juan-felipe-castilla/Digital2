@@ -64,57 +64,52 @@ Estas son Imagenes de los circuitos
 ```mermaid 
 flowchart TD
 
-    INICIO([Inicio/Reset]) --> CONFIG[Configuración de Puertos, ADC, USART, Interrupciones]
+    A([Inicio]) --> B[Configuracion Inicial]
 
-    CONFIG --> INIT[Inicialización de Variables]
+    B --> C[Inicializar Variables]
 
-    INIT --> LOOP_PRINCIPAL
+    C --> D(LOOP_PRINCIPAL)
     
-    LOOP_PRINCIPAL(LOOP_PRINCIPAL) --> S_AN0[Seleccionar Canal AN0 (LDR0)]
-    S_AN0 --> CONV0[Iniciar Conversión ADC (LDR0)]
-    CONV0 --> ESP0[Esperar Conversión]
-    ESP0 --> ALM0[Almacenar Resultado en ADC0]
+    D --> E[LDR0: Seleccionar AN0 / Iniciar Conversión]
+    E --> F[LDR0: Esperar Conversion / Almacenar ADC0]
     
-    ALM0 --> S_AN1[Seleccionar Canal AN1 (LDR1)]
-    S_AN1 --> CONV1[Iniciar Conversión ADC (LDR1)]
-    CONV1 --> ESP1[Esperar Conversión]
-    ESP1 --> ALM1[Almacenar Resultado en ADC1]
+    F --> G[LDR1: Seleccionar AN1 / Iniciar Conversión]
+    G --> H[LDR1: Esperar Conversion / Almacenar ADC1]
 
-    ALM1 --> PROC0[Procesar ADC0 y obtener RESP0 (Cuadrante 0-3)]
-    PROC0 --> PROC1[Procesar ADC1 y obtener RESP1 (Cuadrante 0-3)]
+    H --> I[Procesar ADC0 y ADC1 a Cuadrantes (RESP0, RESP1)]
     
-    PROC1 --> CALC[Calcular DIFF = RESP0 - RESP1]
+    I --> J[Calcular DIFF = RESP0 - RESP1]
 
-    CALC --> ZONA_MUERTA{DIFF es Cero (Zona Muerta)?}
-    ZONA_MUERTA -- Sí --> LOOP_PRINCIPAL
-    ZONA_MUERTA -- No --> LDR_CHECK{RESP0 > RESP1 (LDR0 Mayor)?}
+    J --> K{DIFF es Cero?}
+    K -- Si --> D
+    K -- No --> L{LDR0 > LDR1?}
 
-    LDR_CHECK -- Sí --> LDR0_MAYOR(LDR0_MAYOR: Luz Izquierda)
-    LDR_CHECK -- No --> LDR1_MAYOR(LDR1_MAYOR: Luz Derecha)
+    L -- Si --> M(LDR0_MAYOR)
+    L -- No --> N(LDR1_MAYOR)
 
-    LDR0_MAYOR --> D0_FUE{|DIFF| = 3?}
-    D0_FUE -- Sí --> IZQ_F[P_DI = 'b' (Izquierda Fuerte)]
-    D0_FUE -- No --> IZQ_L[P_DI = 'A' (Izquierda Leve)]
+    M --> M1{Diferencia Fuerte (|DIFF|=3)?}
+    M1 -- Si --> M_F[P_DI = 'b' (IZQ Fuerte)]
+    M1 -- No --> M_L[P_DI = 'A' (IZQ Leve)]
 
-    LDR1_MAYOR --> D1_FUE{|DIFF| = 3?}
-    D1_FUE -- Sí --> DER_F[P_DI = 'd' (Derecha Fuerte)]
-    D1_FUE -- No --> DER_L[P_DI = 'C' (Derecha Leve)]
+    N --> N1{Diferencia Fuerte (|DIFF|=3)?}
+    N1 -- Si --> N_F[P_DI = 'd' (DER Fuerte)]
+    N1 -- No --> N_L[P_DI = 'C' (DER Leve)]
 
-    IZQ_L --> SET_I(SET_INDICADOR)
-    IZQ_F --> SET_I
-    DER_L --> SET_I
-    DER_F --> SET_I
+    M_L --> O(SET_INDICADOR)
+    M_F --> O
+    N_L --> O
+    N_F --> O
 
-    SET_I --> LED[Llamar PRENDERLED]
-    LED --> SERVO[Llamar VERIFICARP (Control PWM Servo)]
-    SERVO --> LOOP_PRINCIPAL
+    O --> P[Llamar PRENDERLED]
+    P --> Q[Llamar VERIFICARP (Control Servo)]
+    Q --> D
     
-    style SERVO fill:#f9f,stroke:#333
-    style LED fill:#f9f,stroke:#333
-    style IZQ_L fill:#ccf,stroke:#333
-    style IZQ_F fill:#ccf,stroke:#333
-    style DER_L fill:#ccf,stroke:#333
-    style DER_F fill:#ccf,stroke:#333
+    style Q fill:#f9f,stroke:#333
+    style P fill:#f9f,stroke:#333
+    style M_L fill:#ccf,stroke:#333
+    style M_F fill:#ccf,stroke:#333
+    style N_L fill:#ccf,stroke:#333
+    style N_F fill:#ccf,stroke:#333
 ```
 ### 6. Conclusión
 
