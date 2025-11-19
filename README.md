@@ -4,17 +4,17 @@
 
 ### 1. Introducción y Objetivo del Proyecto
 
-El **Seguidor de Sol Automático** (o *Solar Tracker*) es un sistema electromecánico diseñado para **orientar un panel** hacia la posición óptima del sol a lo largo del día. El objetivo principal de este proyecto es **maximizar la eficiencia de captación de energía lumínica** 
+El **Seguidor de Sol Automático** (o *Solar Tracker*) es un sistema electromecánico diseñado para **orientar un panel solar** hacia la posición óptima para obtener la mayor luz del sol a lo largo del día. El objetivo principal de este proyecto es **maximizar la eficiencia de captación de energía lumínica** 
 
 ### 2. Marco Conceptual y Principios de Funcionamiento
 
 #### 2.1. Principio Básico
 
-El sistema se basa en la comparación de la intensidad lumínica detectada por dos **resistencias dependientes de la luz (LDRs)**. La diferencia en la lectura de voltaje entre los sensores indica la dirección en la que debe moverse el sistema para alinearse con la fuente de luz más intensa.
+El sistema se basa en la comparación de la intensidad lumínica detectada por dos **Fotoresistencias(LDRs)**. La diferencia en la lectura de voltaje entre los sensores indica la dirección en la que debe moverse el sistema para alinearse con la fuente de luz más intensa.
 
 #### 2.2. Arquitectura de Control
 
-Se implementa un PIC16F887 que ajusta la posición de un servomotor, en relación a las LDR conectadas, el mismo modula el pulso de salida en relación a la diferencia de potencial entre las resistencias variables.
+Se implementa un PIC16F887 que ajusta la posición de un servomotor, en relación a las LDR conectadas, el mismo modula el pulso de salida en relación a la diferencia de potencial entre las resistencias variables, cabe decir que el calculo de las ressitencias para el divisor resistivo de los LDR´s se hizo para que la luz maxima que tuviera fuera la del flash del celular y la oscuridad maxima es el ldr totalmente tapado. Por otro lado, se establecio una comunicacion serie la cual, mediante una interrupcion externa, comunica a la computadora la posicion actual del servomotor, lo mismo ocurre en un modulo de 4 displays de 7 segmentos, el cual nos muestra con un "0" la psoicion actual.
 
 ### 3. Componentes de Hardware y Software
 
@@ -28,8 +28,8 @@ Se implementa un PIC16F887 que ajusta la posición de un servomotor, en relació
 | **Lenguaje** | **ASSEMBLER** Lenguaje de programación utilizado para implementar la lógica de control. |
 
 ### 4. Montaje e Instalación
-El montaje en primera instancia fue realizado integramente en protoboard, luego de esto implementamos un "modulo" realizado en una placa experimental el cual se encargaba del control y polarización del módulo de 7 segmentos, este siendo practiamente indispensable para montarlo en un chasis, ya que en protoboard no teniamos forma de que el mismo se vea de la externa.
-La imagen adjunta es del montaje en protoboard y ese módulo mencionado, el mismo está realizado completamente con cables macho-macho, por eso se ve un poco desprolijo, tenemos intenciones de en un futuro, poder realizar las placas impresas, las cuales se encuentran el repositorio, son funcionales, pero por temas de no poseer las herramientas adecuadas, traian más problemas q soluciones.
+El montaje en primera instancia fue realizado integramente en protoboard, luego de esto implementamos un "modulo" realizado en una placa experimental el cual se encargaba del control y polarización del módulo de 7 segmentos, este siendo practiamente indispensable para montarlo en un chasis, ya que en un protoboard no hbaria forma de mostrarlo de manera efectiva por los conexiones que pasan por encima.
+La imagen adjunta es del montaje en protoboard y ese módulo mencionado, el mismo está realizado completamente con cables macho-macho, por eso se ve un poco desprolijo, tenemos intenciones de en un futuro, poder realizar las placas impresas, las cuales se encuentran el repositorio, son funcionales, pero por temas de no poseer las herramientas adecuadas, se decidio por evitarlo pues se producian muchos incomvenientes de funcionamiento.
 
 <p align="center">
   <img src="Imagenes/montaje.jpeg" width="400">
@@ -86,12 +86,8 @@ P-->S
 Q-->S
 R-->S
 S-->T[Display]
-T-->U{INTF = 0?}
-U--Si-->V[Transimision Serie]
-V-->D
-U--No-->W[Servo Control]
-W-->D
-
+T-->U[Servo Control]
+U-->D
 
 style M fill:#ccf,stroke:#333
 style N fill:#ccf,stroke:#333
