@@ -76,10 +76,10 @@ K--No-->L{LDR0 Mayor?}
 L--Si-->M(IZQUIERDA)
 L--No-->N(DERECHA)
 M-->M1{DIFF igual a 3?}
-M1--Si-->O[b]
+M1--Si-->O[B]
 M1--No-->P[A]
 N-->N1{DIFF igual a 3?}
-N1--Si-->Q[d]
+N1--Si-->Q[D]
 N1--No-->R[C]
 O-->S(Control)
 P-->S
