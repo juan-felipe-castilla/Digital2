@@ -72,15 +72,15 @@ F --> I[Procesar a RESP0 y RESP1]
 I --> J[Calcular DIFF]
 J --> K{DIFF = 0?}
 K -- Si --> D
-K -- No --> L{LDR0 > LDR1?}
+K -- No --> L{LDR0 Mayor?}
 L -- Si --> M(IZQUIERDA)
 L -- No --> N(DERECHA)
-M --> M1{|DIFF|=3?}
-M1 -- Si --> O[P_DI = 'b']
-M1 -- No --> P[P_DI = 'A']
-N --> N1{|DIFF|=3?}
-N1 -- Si --> Q[P_DI = 'd']
-N1 -- No --> R[P_DI = 'C']
+M --> M1{DIFF igual a 3?}
+M1 -- Si --> O[b]
+M1 -- No --> P[A]
+N --> N1{DIFF igual a 3?}
+N1 -- Si --> Q[d]
+N1 -- No --> R[C]
 O --> S(Control)
 P --> S
 Q --> S
