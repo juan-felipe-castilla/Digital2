@@ -63,40 +63,40 @@ Estas son Imagenes de los circuitos
 ### 5. Diagrama de Flujo del Código
 ```mermaid 
 flowchart TD
-A([Inicio]) --> B[Configuracion]
-B --> C[Inicializar Variables]
-C --> D(LOOP_PRINCIPAL)
-D --> E[LDR0: Leer ADC]
-E --> F[Almacenar ADC0]
-F --> G[LDR1: Leer ADC]
-G --> H[Almacenar ADC1]
-H --> I[Obtener Cuadrantes RESP0 y RESP1]
+A([Inicio]) --> B[Config]
+B --> C[Init Vars]
+C --> D(LOOP)
+D --> E[Leer LDR0]
+E --> F[Leer LDR1]
+F --> I[Procesar a RESP0 y RESP1]
 I --> J[Calcular DIFF]
-J --> K{DIFF es Cero?}
+J --> K{DIFF = 0?}
 K -- Si --> D
-K -- No --> L{LDR0 Mayor?}
-L -- Si --> M(LDR0_MAYOR: IZQUIERDA)
-L -- No --> N(LDR1_MAYOR: DERECHA)
-M --> M1{Diferencia = 3?}
-M1 -- Si --> M_F[P_DI = 'b' (IZQ Fuerte)]
-M1 -- No --> M_L[P_DI = 'A' (IZQ Leve)]
-N --> N1{Diferencia = 3?}
-N1 -- Si --> N_F[P_DI = 'd' (DER Fuerte)]
-N1 -- No --> N_L[P_DI = 'C' (DER Leve)]
-M_L --> O(SET_INDICADOR)
-M_F --> O
-N_L --> O
-N_F --> O
-O --> P[PRENDERLED]
-P --> Q[VERIFICARP: Control Servo]
-Q --> D
+K -- No --> L{LDR0 > LDR1?}
+L -- Si --> M(IZQUIERDA)
+L -- No --> N(DERECHA)
+M --> M1{|DIFF|=3?}
+M1 -- Si --> O[P_DI = 'b']
+M1 -- No --> P[P_DI = 'A']
+N --> N1{|DIFF|=3?}
+N1 -- Si --> Q[P_DI = 'd']
+N1 -- No --> R[P_DI = 'C']
+O --> S(Control)
+P --> S
+Q --> S
+R --> S
+S --> T[PRENDERLED]
+T --> U[VERIFICARP (Servo)]
+U --> D
 
-style Q fill:#f9f,stroke:#333
-style P fill:#f9f,stroke:#333
-style M_L fill:#ccf,stroke:#333
-style M_F fill:#ccf,stroke:#333
-style N_L fill:#ccf,stroke:#333
-style N_F fill:#ccf,stroke:#333
+style M fill:#ccf,stroke:#333
+style N fill:#ccf,stroke:#333
+style O fill:#ccf,stroke:#333
+style P fill:#ccf,stroke:#333
+style Q fill:#ccf,stroke:#333
+style R fill:#ccf,stroke:#333
+style T fill:#f9f,stroke:#333
+style U fill:#f9f,stroke:#333
 ```
 ### 6. Conclusión
 
