@@ -64,27 +64,52 @@ Estas son Imagenes de los circuitos
 ```mermaid
 flowchart TD
 
-    A([Inicio]) --> B[Inicializar variables]
+    %% =================== INICIO ===================
+    A([RESET / Inicio]) --> B[Configurar TRISA, TRISB, ANSEL, ADCON0, ADCON1]
+    B --> C[Configurar UART (TXSTA, RCSTA, SPBRG)]
+    C --> D[Configurar Timer0 (OPTION_REG)]
+    D --> E[Configurar interrupciones (INTCON)]
+    E --> F[Inicializar variables: nconT, d0,d1,d2,d3, ADC0, ADC1, DIFF, P_DI, SP]
+    F --> G([Loop Principal])
 
-    B --> C{ADRESH mayor que Umbral}
-    C -- Si --> D[Activar LED Alarma]
-    C -- No --> E[Apagar LED Alarma]
+    %% =================== LECTURA ADC0 (AN0) ===================
+    G --> H[Seleccionar canal AN0]
+    H --> I[Iniciar conversión ADC]
+    I --> J[Esperar conversión terminada]
+    J --> K[Guardar ADC0 = ADRESH]
 
-    D --> F[Leer LDR0 y LDR1]
-    E --> F[Leer LDR0 y LDR1]
+    %% =================== LECTURA ADC1 (AN1) ===================
+    K --> L[Seleccionar canal AN1]
+    L --> M[Iniciar conversión ADC]
+    M --> N[Esperar conversión terminada]
+    N --> O[Guardar ADC1 = ADRESH]
 
-    F --> G[Calcular DIFF = LDR1 - LDR0]
+    %% =================== CÁLCULOS ===================
+    O --> P[DIFF = ADC1 - ADC0]
 
-    G --> H{DIFF mayor que 0}
-    H -- Si --> I[Incrementar Servo]
-    H -- No --> J[Decrementar Servo]
+    %% =================== CONTROL DE LED ===================
+    P --> Q{ADC0 > UMBRAL?}
+    Q -- Si --> R[Encender LED]
+    Q -- No --> S[Apagar LED]
 
-    I --> K[Aplicar Movimiento Servo]
-    J --> K[Aplicar Movimiento Servo]
+    %% =================== CONTROL SERVO ===================
+    R --> T
+    S --> T
 
-    K --> L[Esperar Retardo]
-    L --> M([Fin])
+    T --> U{DIFF > 0?}
+    U -- Si --> V[Incrementar posición Servo]
+    U -- No --> W[Decrementar posición Servo]
 
+    V --> X[Actualizar señal PWM]
+    W --> X[Actualizar señal PWM]
+
+    %% =================== TRANSMISIÓN TX ===================
+    X --> Y[Preparar byte para TX (valor DIFF o estado)]
+    Y --> Z[Enviar por UART: mover valor a TXREG]
+
+    %% =================== RETARDO ===================
+    Z --> AA[Retardo (Timer0 + contadores)]
+    AA --> G
 
 
 ```
