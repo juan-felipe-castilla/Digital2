@@ -32,7 +32,7 @@ El montaje en primera instancia fue realizado integramente en protoboard, luego 
 La imagen adjunta es del montaje en protoboard y ese módulo mencionado, el mismo está realizado completamente con cables macho-macho, por eso se ve un poco desprolijo, tenemos intenciones de en un futuro, poder realizar las placas impresas, las cuales se encuentran el repositorio, son funcionales, pero por temas de no poseer las herramientas adecuadas, traian más problemas q soluciones.
 
 <p align="center">
-  <img src="montaje.jpeg" width="400">
+  <img src="Imagenes/montaje.jpeg" width="400">
 </p>
 
 
