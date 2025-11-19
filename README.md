@@ -35,6 +35,29 @@ La imagen adjunta es del montaje en protoboard y ese módulo mencionado, el mism
   <img src="Imagenes/montaje.jpeg" width="400">
 </p>
 
+Estas son Imagenes de los circuitos
+
+**LDR**
+<p align="center">
+  <img src="Imagenes/LDR.jpeg" width="400">
+</p>
+
+**7 Segmentos**
+<p align="center">
+  <img src="Imagenes/Modulo.jpeg" width="400">
+</p>
+
+
+**Configuración del PIC**
+<p align="center">
+  <img src="Imagenes/Diagrama_LEV.png" width="400">
+</p>
+
+**PCB de LDR Y 7SEG**
+<p align="center">
+  <img src="Imagenes/pcb.jpeg" width="400">
+</p>
+
 
 
 ### 5. Diagramas
