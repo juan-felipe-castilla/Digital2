@@ -63,8 +63,8 @@ Estas son Imagenes de los circuitos
 ### 5. Diagrama de Flujo del Código
 ```mermaid 
 flowchart TD
-A([Inicio])-->B[Config]
-B-->C[Init Vars]
+A([Inicio])-->B[Configuracion de Puertos]
+B-->C[Inicializar Variables]
 C-->D(LOOP)
 D-->E[Leer LDR0]
 E-->F[Leer LDR1]
