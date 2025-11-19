@@ -64,34 +64,34 @@ Estas son Imagenes de los circuitos
 ```mermaid 
 flowchart TD
 
-    A([Inicio]) --> B[Configuracion Inicial]
+    A([Inicio]) --> B[Configuracion]
 
     B --> C[Inicializar Variables]
 
     C --> D(LOOP_PRINCIPAL)
     
-    D --> E[LDR0: Seleccionar AN0 / Iniciar Conversión]
-    E --> F[LDR0: Esperar Conversion / Almacenar ADC0]
+    D --> E[LDR0]
+    E --> F[Almacenar ADC0]
     
-    F --> G[LDR1: Seleccionar AN1 / Iniciar Conversión]
-    G --> H[LDR1: Esperar Conversion / Almacenar ADC1]
+    F --> G[LDR1]
+    G --> H[Almacenar ADC1]
 
-    H --> I[Procesar ADC0 y ADC1 a Cuadrantes (RESP0, RESP1)]
+    H --> I[Obtener Cuadrantes RESP0 y RESP1]
     
-    I --> J[Calcular DIFF = RESP0 - RESP1]
+    I --> J[Calcular DIFF]
 
     J --> K{DIFF es Cero?}
     K -- Si --> D
-    K -- No --> L{LDR0 > LDR1?}
+    K -- No --> L{LDR0 Mayor?}
 
     L -- Si --> M(LDR0_MAYOR)
     L -- No --> N(LDR1_MAYOR)
 
-    M --> M1{Diferencia Fuerte (|DIFF|=3)?}
+    M --> M1{|DIFF|=3?}
     M1 -- Si --> M_F[P_DI = 'b' (IZQ Fuerte)]
     M1 -- No --> M_L[P_DI = 'A' (IZQ Leve)]
 
-    N --> N1{Diferencia Fuerte (|DIFF|=3)?}
+    N --> N1{|DIFF|=3?}
     N1 -- Si --> N_F[P_DI = 'd' (DER Fuerte)]
     N1 -- No --> N_L[P_DI = 'C' (DER Leve)]
 
@@ -101,7 +101,7 @@ flowchart TD
     N_F --> O
 
     O --> P[Llamar PRENDERLED]
-    P --> Q[Llamar VERIFICARP (Control Servo)]
+    P --> Q[Llamar VERIFICARP]
     Q --> D
     
     style Q fill:#f9f,stroke:#333
