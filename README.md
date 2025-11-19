@@ -73,14 +73,14 @@ I-->J[Calcular DIFF]
 J-->K{DIFF = 0?}
 K--Si-->D
 K--No-->L{LDR0 Mayor?}
-L--Si-->M(Izq Leve)
-L--No-->N(Izq Fuerte)
+L--Si-->M(Izquierda)
+L--No-->N(Derecha)
 M-->M1{DIFF igual a 3?}
-M1--Si-->O[B]
-M1--No-->P[A]
+M1--Si-->O[Izq Fuerte(B)]
+M1--No-->P[Izq Leve(A)]
 N-->N1{DIFF igual a 3?}
-N1--Si-->Q[D]
-N1--No-->R[C]
+N1--Si-->Q[Derecha Fuerte(D)]
+N1--No-->R[Derecha Leve(C)]
 O-->S(Control)
 P-->S
 Q-->S
