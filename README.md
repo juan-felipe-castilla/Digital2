@@ -66,7 +66,7 @@ flowchart TD
 
     INICIO([Inicio/Reset]) --> CONFIG[Configuración de Puertos, ADC, USART, Interrupciones]
 
-    CONFIG --> INIT[Inicialización de Variables (ADC0, ADC1, DIFF, SP, etc.)]
+    CONFIG --> INIT[Inicialización de Variables]
 
     INIT --> LOOP_PRINCIPAL
     
@@ -87,26 +87,26 @@ flowchart TD
 
     CALC --> ZONA_MUERTA{DIFF es Cero (Zona Muerta)?}
     ZONA_MUERTA -- Sí --> LOOP_PRINCIPAL
-    ZONA_MUERTA -- No --> LDR_CHECK{RESP0 > RESP1 (Carry=1)?}
+    ZONA_MUERTA -- No --> LDR_CHECK{RESP0 > RESP1 (LDR0 Mayor)?}
 
-    LDR_CHECK -- Sí --> LDR0_MAYOR(LDR0_MAYOR: Luz a la Izquierda)
-    LDR_CHECK -- No --> LDR1_MAYOR(LDR1_MAYOR: Luz a la Derecha)
+    LDR_CHECK -- Sí --> LDR0_MAYOR(LDR0_MAYOR: Luz Izquierda)
+    LDR_CHECK -- No --> LDR1_MAYOR(LDR1_MAYOR: Luz Derecha)
 
     LDR0_MAYOR --> D0_FUE{|DIFF| = 3?}
-    D0_FUE -- Sí --> IZQ_F[Asignar P_DI = 'b' (Izquierda Fuerte)]
-    D0_FUE -- No --> IZQ_L[Asignar P_DI = 'A' (Izquierda Leve)]
+    D0_FUE -- Sí --> IZQ_F[P_DI = 'b' (Izquierda Fuerte)]
+    D0_FUE -- No --> IZQ_L[P_DI = 'A' (Izquierda Leve)]
 
     LDR1_MAYOR --> D1_FUE{|DIFF| = 3?}
-    D1_FUE -- Sí --> DER_F[Asignar P_DI = 'd' (Derecha Fuerte)]
-    D1_FUE -- No --> DER_L[Asignar P_DI = 'C' (Derecha Leve)]
+    D1_FUE -- Sí --> DER_F[P_DI = 'd' (Derecha Fuerte)]
+    D1_FUE -- No --> DER_L[P_DI = 'C' (Derecha Leve)]
 
     IZQ_L --> SET_I(SET_INDICADOR)
     IZQ_F --> SET_I
     DER_L --> SET_I
     DER_F --> SET_I
 
-    SET_I --> LED[Llamar PRENDERLED (Indica dirección con MUX)]
-    LED --> SERVO[Llamar VERIFICARP (Controla Servomotor con PWM)]
+    SET_I --> LED[Llamar PRENDERLED]
+    LED --> SERVO[Llamar VERIFICARP (Control PWM Servo)]
     SERVO --> LOOP_PRINCIPAL
     
     style SERVO fill:#f9f,stroke:#333
@@ -115,7 +115,6 @@ flowchart TD
     style IZQ_F fill:#ccf,stroke:#333
     style DER_L fill:#ccf,stroke:#333
     style DER_F fill:#ccf,stroke:#333
-
 ```
 ### 6. Conclusión
 
