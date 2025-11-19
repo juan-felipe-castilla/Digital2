@@ -63,31 +63,31 @@ Estas son Imagenes de los circuitos
 ### 5. Diagrama de Flujo del Código
 ```mermaid 
 flowchart TD
-A([Inicio]) --> B[Config]
-B --> C[Init Vars]
-C --> D(LOOP)
-D --> E[Leer LDR0]
-E --> F[Leer LDR1]
-F --> I[Procesar a RESP0 y RESP1]
-I --> J[Calcular DIFF]
-J --> K{DIFF = 0?}
-K -- Si --> D
-K -- No --> L{LDR0 Mayor?}
-L -- Si --> M(IZQUIERDA)
-L -- No --> N(DERECHA)
-M --> M1{DIFF igual a 3?}
-M1 -- Si --> O[b]
-M1 -- No --> P[A]
-N --> N1{DIFF igual a 3?}
-N1 -- Si --> Q[d]
-N1 -- No --> R[C]
-O --> S(Control)
-P --> S
-Q --> S
-R --> S
-S --> T[PRENDERLED]
-T --> U[VERIFICARP (Servo)]
-U --> D
+A([Inicio])-->B[Config]
+B-->C[Init Vars]
+C-->D(LOOP)
+D-->E[Leer LDR0]
+E-->F[Leer LDR1]
+F-->I[Procesar Cuadrantes]
+I-->J[Calcular DIFF]
+J-->K{DIFF = 0?}
+K--Si-->D
+K--No-->L{LDR0 Mayor?}
+L--Si-->M(IZQUIERDA)
+L--No-->N(DERECHA)
+M-->M1{DIFF igual a 3?}
+M1--Si-->O[b]
+M1--No-->P[A]
+N-->N1{DIFF igual a 3?}
+N1--Si-->Q[d]
+N1--No-->R[C]
+O-->S(Control)
+P-->S
+Q-->S
+R-->S
+S-->T[LED]
+T-->U[Servo Control]
+U-->D
 
 style M fill:#ccf,stroke:#333
 style N fill:#ccf,stroke:#333
