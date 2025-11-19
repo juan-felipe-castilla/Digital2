@@ -64,26 +64,26 @@ Estas son Imagenes de los circuitos
 ```mermaid
 flowchart TD
 
-A[Inicio] --> B[Configurar puertos<br/>TRIS A y B]
-B --> C[Configurar UART solo TX<br/>TXSTA: habilitar TX<br/>RCSTA: habilitar puerto serie<br/>SPBRG: baudrate]
-C --> D[Posición inicial del servo<br/>Poner RB0 en nivel inicial]
+    A([Inicio]) --> B[Inicializar variables]
 
-D --> E[Leer LDR0 (canal ADC0)]
-E --> F[Leer LDR1 (canal ADC1)]
+    B --> C{ADRESH mayor que Umbral}
+    C -- Si --> D[Activar LED Alarma]
+    C -- No --> E[Apagar LED Alarma]
 
-F --> G{LDR0 < LDR1?}
+    D --> F[Leer LDR0 y LDR1]
+    E --> F[Leer LDR0 y LDR1]
 
-G -- Si --> H[Ejecutar rutina: Mover servo a la derecha]
-G -- No --> I[Ejecutar rutina: Mover servo a la izquierda]
+    F --> G[Calcular DIFF = LDR1 - LDR0]
 
-H --> J[Transmitir por UART el valor LDR0]
-I --> K[Transmitir por UART el valor LDR1]
+    G --> H{DIFF mayor que 0}
+    H -- Si --> I[Incrementar Servo]
+    H -- No --> J[Decrementar Servo]
 
-J --> L[Retardo]
-K --> L
+    I --> K[Aplicar Movimiento Servo]
+    J --> K[Aplicar Movimiento Servo]
 
-L --> M[Volver a iniciar ciclo]
-M --> D
+    K --> L[Esperar Retardo]
+    L --> M([Fin])
 
 ```
 
