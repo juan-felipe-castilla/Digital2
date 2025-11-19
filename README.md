@@ -14,7 +14,7 @@ El sistema se basa en la comparación de la intensidad lumínica detectada por d
 
 #### 2.2. Arquitectura de Control
 
-Se implementa un PIC16F887 que ajusta la posición de un servomotor, en relación a las LDR conectadas, el mismo modula el pulso de salida en relación a la diferencia de potencial entre las resistencias variables, cabe decir que el calculo de las ressitencias para el divisor resistivo de los LDR´s se hizo para que la luz maxima que tuviera fuera la del flash del celular y la oscuridad maxima es el ldr totalmente tapado. Por otro lado, se establecio una comunicacion serie la cual, mediante una interrupcion externa, comunica a la computadora la posicion actual del servomotor, lo mismo ocurre en un modulo de 4 displays de 7 segmentos, el cual nos muestra con un "0" la psoicion actual.
+Se implementa un PIC16F887 que ajusta la posición de un servomotor, en relación a las LDR conectadas, el mismo modula el pulso de salida en relación a la diferencia de potencial entre las resistencias variables, cabe decir que el calculo de las resitencias para el divisor resistivo de los LDR´s se hizo para que la luz maxima que tuviera fuera la del flash del celular y la oscuridad maxima es el LDR totalmente tapado. Por otro lado, se establecio una comunicacion serie la cual, mediante una interrupcion externa, comunica a la computadora la posicion actual del servomotor, lo mismo ocurre en un modulo de 4 displays de 7 segmentos, el cual nos muestra con un "0" la posicion actual.
 
 ### 3. Componentes de Hardware y Software
 
