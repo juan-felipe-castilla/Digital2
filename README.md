@@ -61,32 +61,62 @@ Estas son Imagenes de los circuitos
 
 
 ### 5. Diagrama de Flujo del Código
-```mermaid
+```mermaid 
 flowchart TD
 
-    A([Inicio]) --> B[Inicializar variables]
+    INICIO([Inicio/Reset]) --> CONFIG[Configuración de Puertos, ADC, USART, Interrupciones]
 
-    B --> C{ADRESH mayor que Umbral}
-    C -- Si --> D[Activar LED Alarma]
-    C -- No --> E[Apagar LED Alarma]
+    CONFIG --> INIT[Inicialización de Variables (ADC0, ADC1, DIFF, SP, etc.)]
 
-    D --> F[Leer LDR0 y LDR1]
-    E --> F[Leer LDR0 y LDR1]
+    INIT --> LOOP_PRINCIPAL
+    
+    LOOP_PRINCIPAL(LOOP_PRINCIPAL) --> S_AN0[Seleccionar Canal AN0 (LDR0)]
+    S_AN0 --> CONV0[Iniciar Conversión ADC (LDR0)]
+    CONV0 --> ESP0[Esperar Conversión]
+    ESP0 --> ALM0[Almacenar Resultado en ADC0]
+    
+    ALM0 --> S_AN1[Seleccionar Canal AN1 (LDR1)]
+    S_AN1 --> CONV1[Iniciar Conversión ADC (LDR1)]
+    CONV1 --> ESP1[Esperar Conversión]
+    ESP1 --> ALM1[Almacenar Resultado en ADC1]
 
-    F --> G[Calcular DIFF = LDR1 - LDR0]
+    ALM1 --> PROC0[Procesar ADC0 y obtener RESP0 (Cuadrante 0-3)]
+    PROC0 --> PROC1[Procesar ADC1 y obtener RESP1 (Cuadrante 0-3)]
+    
+    PROC1 --> CALC[Calcular DIFF = RESP0 - RESP1]
 
-    G --> H{DIFF mayor que 0}
-    H -- Si --> I[Incrementar Servo]
-    H -- No --> J[Decrementar Servo]
+    CALC --> ZONA_MUERTA{DIFF es Cero (Zona Muerta)?}
+    ZONA_MUERTA -- Sí --> LOOP_PRINCIPAL
+    ZONA_MUERTA -- No --> LDR_CHECK{RESP0 > RESP1 (Carry=1)?}
 
-    I --> K[Aplicar Movimiento Servo]
-    J --> K[Aplicar Movimiento Servo]
+    LDR_CHECK -- Sí --> LDR0_MAYOR(LDR0_MAYOR: Luz a la Izquierda)
+    LDR_CHECK -- No --> LDR1_MAYOR(LDR1_MAYOR: Luz a la Derecha)
 
-    K --> L[Esperar Retardo]
-    L --> M([Fin])
+    LDR0_MAYOR --> D0_FUE{|DIFF| = 3?}
+    D0_FUE -- Sí --> IZQ_F[Asignar P_DI = 'b' (Izquierda Fuerte)]
+    D0_FUE -- No --> IZQ_L[Asignar P_DI = 'A' (Izquierda Leve)]
+
+    LDR1_MAYOR --> D1_FUE{|DIFF| = 3?}
+    D1_FUE -- Sí --> DER_F[Asignar P_DI = 'd' (Derecha Fuerte)]
+    D1_FUE -- No --> DER_L[Asignar P_DI = 'C' (Derecha Leve)]
+
+    IZQ_L --> SET_I(SET_INDICADOR)
+    IZQ_F --> SET_I
+    DER_L --> SET_I
+    DER_F --> SET_I
+
+    SET_I --> LED[Llamar PRENDERLED (Indica dirección con MUX)]
+    LED --> SERVO[Llamar VERIFICARP (Controla Servomotor con PWM)]
+    SERVO --> LOOP_PRINCIPAL
+    
+    style SERVO fill:#f9f,stroke:#333
+    style LED fill:#f9f,stroke:#333
+    style IZQ_L fill:#ccf,stroke:#333
+    style IZQ_F fill:#ccf,stroke:#333
+    style DER_L fill:#ccf,stroke:#333
+    style DER_F fill:#ccf,stroke:#333
 
 ```
-
 ### 6. Conclusión
 
 El proyecto Seguidor de Sol cumplió con los objetivos planteados, demostrando la aplicación práctica de los conocimientos de la materia Digital 2 en el sensado (LDRs), el procesamiento de señales (Microcontrolador) y la actuación (Servomotores). La implementación de la lógica de control digital permite una respuesta eficiente a los cambios de la fuente de luz.
