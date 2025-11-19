@@ -64,114 +64,27 @@ Estas son Imagenes de los circuitos
 ```mermaid
 flowchart TD
 
-%% ============================
-%% SECCIÓN DE INICIO Y SETUP
-%% ============================
+    A([Inicio]) --> B[Inicializar variables]
 
-A([RESET / Inicio]) --> B[Configurar Puertos I/O\nTRISA, TRISB, TRISC, ANSEL]
-B --> C[Configurar Comunicación Serial\nTXSTA, RCSTA, SPBRG]
-C --> D[Configurar ADC\nADCON0, ADCON1]
-D --> E[Configurar Timer0\nOPTION_REG, TMR0]
-E --> F[Configurar Interrupciones\nINTCON]
-F --> G[Inicializar Variables\nconT,d0,d1,d2,d3,ADC0,ADC1,DIFF,P_DI,SP]
+    B --> C{ADRESH mayor que Umbral}
+    C -- Si --> D[Activar LED Alarma]
+    C -- No --> E[Apagar LED Alarma]
 
-G --> H([Loop Principal])
+    D --> F[Leer LDR0 y LDR1]
+    E --> F[Leer LDR0 y LDR1]
 
-%% ============================
-%% LOOP PRINCIPAL
-%% ============================
+    F --> G[Calcular DIFF = LDR1 - LDR0]
 
-H --> I[Seleccionar AN0\nSELECCIONAR_AN0]
-I --> J[Iniciar Conversión\nINICIAR_CONVERSION]
-J --> K[Esperar Conversión\nESPERAR_CONVERSION]
-K --> L[Guardar ADC0 → variable ADC0]
+    G --> H{DIFF mayor que 0}
+    H -- Si --> I[Incrementar Servo]
+    H -- No --> J[Decrementar Servo]
 
-L --> M[Seleccionar AN1\nSELECCIONAR_AN1]
-M --> N[Iniciar Conversión]
-N --> O[Esperar Conversión]
-O --> P[Guardar ADC1 → variable ADC1]
+    I --> K[Aplicar Movimiento Servo]
+    J --> K[Aplicar Movimiento Servo]
 
-P --> Q[Procesar ADC0\nvalor_adc_raw=ADC0\nCALL CALCULAR_CUADRANTE]
-Q --> R[RESP0 ← resultado]
+    K --> L[Esperar Retardo]
+    L --> M([Fin])
 
-R --> S[Procesar ADC1\nvalor_adc_raw=ADC1\nCALL CALCULAR_CUADRANTE]
-S --> T[RESP1 ← resultado]
-
-%% ============================
-%% COMPARACIÓN DE LDRs
-%% ============================
-
-T --> U[Calcular DIFF = RESP1 - RESP0]
-
-U --> V{DIFF = 0?}
-V -- Sí --> H
-
-V -- No --> W{DIFF > 0?\n(LDR1 > LDR0)}
-
-%% ============================
-%% IZQUIERDA
-%% ============================
-
-W -- No --> IZ[Procesar LDR0 Mayor]
-IZ --> IZ2{DIFF = 3?}
-IZ2 -- Sí --> IZ_F[Set P_DI = VALOR_B_IZQ_FUERTE (13)]
-IZ2 -- No --> IZ_L[Set P_DI = VALOR_A_IZQ_LEVE (12)]
-
-%% ============================
-%% DERECHA
-%% ============================
-
-W -- Sí --> DE[Procesar LDR1 Mayor]
-DE --> DE2{DIFF = 3?}
-DE2 -- Sí --> DE_F[Set P_DI = VALOR_D_DER_FUERTE (15)]
-DE2 -- No --> DE_L[Set P_DI = VALOR_C_DER_LEVE (14)]
-
-%% ============================
-%% SIGUE FLUJO
-%% ============================
-
-IZ_F --> IND
-IZ_L --> IND
-DE_F --> IND
-DE_L --> IND
-
-IND[Guardar P_DI]
-
-IND --> LED[Activar MUX Display\nPRENDERLED]
-
-LED --> SV[Control Servo\nVERIFICARP + P0/P1/P2/P3 rutinas]
-
-SV --> H
-
-%% ============================
-%% INTERRUPCIONES
-%% ============================
-
-subgraph ISR [Interrupciones]
-    ISR0[[ISR]] --> ISR1{INTF?}
-    ISR1 -- Sí --> ISRA[COM_SERIE\n→ CARGAR_POSICION\n→ TXREG]
-    ISR1 -- No --> ISR2{T0IF?}
-    ISR2 -- Sí --> ISRT[TIMER_ISR\nIncrementa SP, CONTISR]
-    ISR2 -- No --> ISR3[Restaurar Contexto\nRETFIE]
-    ISRT --> ISR3
-    ISRA --> ISR3
-end
-
-%% ============================
-%% SUBRUTINAS PRINCIPALES
-%% ============================
-
-subgraph CALC [CALCULAR_CUADRANTE]
-    C1[Chequear bits 7 y 6 de valor_adc_raw]
-    C1 --> C2{B7=0?}
-    C2 -- Sí --> CA0{B6=0?}
-    CA0 -- Sí --> RET0[Return 0 (0–63)]
-    CA0 -- No --> RET1[Return 1 (64–127)]
-
-    C2 -- No --> CA1{B6=0?}
-    CA1 -- Sí --> RET2[Return 2 (128–191)]
-    CA1 -- No --> RET3[Return 3 (192–255)]
-end
 
 
 ```
