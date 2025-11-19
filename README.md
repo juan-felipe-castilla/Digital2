@@ -73,8 +73,8 @@ I-->J[Calcular DIFF]
 J-->K{DIFF = 0?}
 K--Si-->D
 K--No-->L{LDR0 Mayor?}
-L--Si-->M(IZQUIERDA)
-L--No-->N(DERECHA)
+L--Si-->M(Izq Leve)
+L--No-->N(Izq Fuerte)
 M-->M1{DIFF igual a 3?}
 M1--Si-->O[B]
 M1--No-->P[A]
@@ -85,7 +85,7 @@ O-->S(Control)
 P-->S
 Q-->S
 R-->S
-S-->T[LED]
+S-->T[Display]
 T-->U[Servo Control]
 U-->D
 
