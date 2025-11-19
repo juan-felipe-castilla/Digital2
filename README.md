@@ -91,19 +91,17 @@ M --> N[Ejecutar VERIFICARP]
 N --> O([Retornar de Interrupción])
 
 E --> P[[Interrupción TMR0]]
-P --> Q[Incrementar contador]
-Q --> R[Chequear desbordes / flags]
+P --> Q[Incrementar CONTADOR]
+Q --> R[Chequear FLAGS]
 R --> S([Retornar de Interrupción])
 
 %% === ADC FUNCION ===
 G -.-> T[[Función ADC]]
 H -.-> T
 T --> U[Iniciar conversión]
-U --> V[Esperar fin de conversión]
-V --> W[Leer ADRESH/ADRESL]
+U --> V[Esperar GO/DONE]
+V --> W[Leer ADRESH:ADRESL]
 W --> X[Retornar valor]
-
-
 
 
 ### 6. Conclusión
