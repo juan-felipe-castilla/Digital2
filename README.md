@@ -1,120 +1,102 @@
-# Seguidor de Sol Automático (Solar Tracker)
-
-## Trabajo Final Digital 2
-
-### 1. Introducción y Objetivo del Proyecto
-
-El **Seguidor de Sol Automático** (o *Solar Tracker*) es un sistema electromecánico diseñado para **orientar un panel solar** hacia la posición óptima para obtener la mayor luz del sol a lo largo del día. El objetivo principal de este proyecto es **maximizar la eficiencia de captación de energía lumínica** 
-
-### 2. Marco Conceptual y Principios de Funcionamiento
-
-#### 2.1. Principio Básico
-
-El sistema se basa en la comparación de la intensidad lumínica detectada por dos **Fotoresistencias(LDRs)**. La diferencia en la lectura de voltaje entre los sensores indica la dirección en la que debe moverse el sistema para alinearse con la fuente de luz más intensa.
-
-#### 2.2. Arquitectura de Control
-
-Se implementa un PIC16F887 que ajusta la posición de un servomotor, en relación a las LDR conectadas, el mismo modula el pulso de salida en relación a la diferencia de potencial entre las resistencias variables, cabe decir que el calculo de las resitencias para el divisor resistivo de los LDR´s se hizo para que la luz maxima que tuviera fuera la del flash del celular y la oscuridad maxima es el LDR totalmente tapado. Por otro lado, se establecio una comunicacion serie la cual, mediante una interrupcion externa, comunica a la computadora la posicion actual del servomotor, lo mismo ocurre en un modulo de 4 displays de 7 segmentos, el cual nos muestra con un "0" la posicion actual.
-
-### 3. Componentes de Hardware y Software
-
-| Tipo | Componente | Descripción |
-| :--- | :--- | :--- |
-| **Microcontrolador** | PIC16f887 | Plataforma de desarrollo principal para procesar las lecturas y controlar los actuadores. |
-| **Sensores** | Resistencias LDR (x2) | Utilizadas para detectar la intensidad lumínica y el diferencial de luz. |
-| **Actuadores** | Servomotores (x1) | Para el eje vertical 
-| **Otros** | Resistencias (10kΩ), Cables de conexión, Protoboard, Estructura de soporte, Display de 7 segmentos, placas experimentales, componentes pertinentes para la configuración y optimo funcionamiento de microcontrolador.
-| **Software** | **MPLAB y AN1310** | Entorno de desarrollo para la programación y carga del código. |
-| **Lenguaje** | **ASSEMBLER** Lenguaje de programación utilizado para implementar la lógica de control. |
-
-### 4. Montaje e Instalación
-El montaje en primera instancia fue realizado integramente en protoboard, luego de esto implementamos un "modulo" realizado en una placa experimental el cual se encargaba del control y polarización del módulo de 7 segmentos, este siendo practiamente indispensable para montarlo en un chasis, ya que en un protoboard no hbaria forma de mostrarlo de manera efectiva por los conexiones que pasan por encima.
-La imagen adjunta es del montaje en protoboard y ese módulo mencionado, el mismo está realizado completamente con cables macho-macho, por eso se ve un poco desprolijo, tenemos intenciones de en un futuro, poder realizar las placas impresas, las cuales se encuentran el repositorio, son funcionales, pero por temas de no poseer las herramientas adecuadas, se decidio por evitarlo pues se producian muchos incomvenientes de funcionamiento.
-
-<p align="center">
-  <img src="Imagenes/montaje.jpeg" width="400">
-</p>
-
-Estas son Imagenes de los circuitos
-
-**LDR**
-<p align="center">
-  <img src="Imagenes/LDR.jpeg" width="400">
-</p>
-
-**7 Segmentos**
-<p align="center">
-  <img src="Imagenes/Modulo.jpeg" width="400">
-</p>
-
-
-**Configuración del PIC**
-<p align="center">
-  <img src="Imagenes/Diagrama_LEV.png" width="400">
-</p>
-
-**PCB de LDR Y 7SEG**
-<p align="center">
-  <img src="Imagenes/pcb.jpeg" width="400">
-</p>
-
-
-
-### 5. Diagrama de Flujo del Código
-```mermaid 
-flowchart TD
-A([Inicio])-->B[Configuracion de Puertos]
-B-->C[Inicializar Variables]
-C-->D(LOOP)
-D-->E[Leer LDR0]
-E-->F[Leer LDR1]
-F-->I[Procesar Cuadrantes]
-I-->J[Calcular DIFF]
-J-->K{DIFF = 0?}
-K--Si-->D
-K--No-->L{LDR0 Mayor?}
-L--Si-->M(Izquierda)
-L--No-->N(Derecha)
-M-->M1{DIFF igual a 3?}
-M1--Si-->O[Izq Fuerte B]
-M1--No-->P[Izq Leve A]
-N-->N1{DIFF igual a 3?}
-N1--Si-->Q[Derecha Fuerte D]
-N1--No-->R[Derecha Leve C]
-O-->S(Control)
-P-->S
-Q-->S
-R-->S
-S-->T[Display]
-T-->U[Servo Control]
-U-->D
-
-style M fill:#ccf,stroke:#333
-style N fill:#ccf,stroke:#333
-style O fill:#ccf,stroke:#333
-style P fill:#ccf,stroke:#333
-style Q fill:#ccf,stroke:#333
-style R fill:#ccf,stroke:#333
-style T fill:#f9f,stroke:#333
-style U fill:#f9f,stroke:#333
-```
-### 6. Conclusión
-
-El proyecto Seguidor de Sol cumplió con los objetivos planteados, demostrando la aplicación práctica de los conocimientos de la materia Digital 2 en el sensado (LDRs), el procesamiento de señales (Microcontrolador) y la actuación (Servomotores). La implementación de la lógica de control digital permite una respuesta eficiente a los cambios de la fuente de luz.
-En cuanto al factor humano, se puso mucho empeño en la realizacion de este trabajo, se gasto  mucha energia y recursos en realizar las placas de montaje y la utilizacion de una caja estanca como gabinete para que sea totalmente funcional,en el camino se cometieron errores y hubieron fallos de impresion, falta de herramientas y experiencia, sin embargo el objetivo se consiguio. Hacer esto en placa no es tan complicado, pero el tiempo y los intentos fallidos determino al equipo por entregarlo en placas de prueba, recomiendo fervientemente a quien intente realizar este proyecto, lo haga en placas de montaje. Desde ya, y por parte de todos los integrantes, terminamos muy satisfechos con el resultado y agradecemos la experienica ganada con este trabajo.
+# 📟[Osciloscopio Digital]
+> **Asignatura:** Electrónica Digital [III] - Universidad Nacional de Córdoba
+> **Integrantes:** >
+>  - **Viberti, Benjamín**
+>  - **Castilla, Felipe**
+>  - **Dalmazzo, Agustín**
+> **Profesor:**
+> - **Blasco Marcos**
 
 ---
 
-## Autores 
+## 🚀 1. Descripción General del Proyecto
+Este proyecto consiste en el diseño y desarrollo de un **Osciloscopio Digital** basado en el microcontrolador **LPC1769** (arquitectura ARM Cortex-M3).
 
-Este proyecto fue desarrollado por:
-
-|  | Nombre |   |
-| :--- | :--- | :--- |
-| Alumno | **Juan Felipe Castilla** | [GitHub: @juan-felipe-castilla]((https://github.com/juan-felipe-castilla)) |
-| Alumno | **Agustín Dalmazzo** | [GitHub: @agustindalmazzo-cyber](https://github.com/agustindalmazzo-cyber) |
-| Alumno | **Benjamín Viberti** | [GitHub: @benjaviberti](https://github.com/benjaviberti) |
+El objetivo principal es la **adquisición de señales analógicas**, su procesamiento  mediante técnicas de software y hardware  y la transmisión a una computadora para su visualización, mediante UART, y tambien posee un generador de funciones interno, para así poder realizar ensayos a diferentes dispositivos.
 
 
+### 🎯 Alcances del Proyecto (¿Qué hace y qué NO hace el sistema?)
+Delimiten claramente los objetivos alcanzados para la entrega final:
+* **El sistema SÍ es capaz de:**
+* *Muestrear y procesar señales de frecuencias medias, bajas.
+* Una precisión en su medidas válidas para realizar pruebas en casa
+* Atenuar señales de entrada, para así ampliar su rango dinamico
+* Generar señales de frecuencia fija
+* Mostrar tanto niveles de amplitud y tiempo, junto a un botón que muestra la frecuencia de entrada
+* **El sistema NO incluye (Fuera de alcance):**
+* Muestreo de alta frecuencia
+* Una precisión comparable a uno comercial
+* Un trigger ajustable
+
+### ⏩ Posibles Etapas Siguientes (Líneas Futuras)
+Planteen cómo escalaría este desarrollo en una versión 2.0 o en un ámbito profesional:
+* Utilizar otro protocolo de comunicación serie, más eficiente
+* Utilizar un módulo de adc más exacto, externo
+* Agregar una punta compensada
+* Poder hacerlo portatil, es decir, que no se requiera una computadora completa para su funcionamiento
 
 ---
+
+## 📐 2. Arquitectura del Sistema: Hardware y Software (Común)
+
+### 🔌 Hardware & Interconexión
+* **Diagrama de Bloques:** [Insertar imagen o link al diagrama de bloques del hardware]
+* **Esquemático del Circuito:** *[Inserte aquí la captura de imagen/render del esquemático completo desarrollado en KiCad/Altium]*
+  `![Esquemático Completo](hardware/esquematico.png)`
+* **Descripción del Circuito y Consideraciones de Diseño:** Breve explicación de las etapas (ej: acoplamiento de señales, protecciones inductivas, filtrado, etc.).
+
+### 💻 Arquitectura de Software (Firmware)
+* **Diagrama de Flujo o Máquina de Estados:** *[Inserte aquí la imagen del diagrama que explique el lazo principal o el comportamiento del sistema]*
+  `![Diagrama de Flujo / Máquina de Estados](docs/diagrama_software.png)`
+
+---
+
+## ⚡ 3. Especificaciones Eléctricas, Alimentación y Entorno (Específico por Asignatura)
+
+### 🔌 Parámetros de Alimentación y Consumo (Común a ambas materias)
+* **Tensión de operación del sistema:** 3.3V
+* **Método de alimentación:**  Fuente de alimentación externa
+* **Consumo estimado o medido:** * En modo activo, con todos sus modulos operativos 100mA, debido a que el unico componente activo es la lpc
+* En modo pasivo(sin el generador de funciones) el consumo baja a los 67mA
+
+
+### 📌 [OPCIÓN B: Solo para alumnos de Electrónica Digital III (Cortex-M / ARM)]
+* **IDE y SDK:** MCUXpresso IDE v11.8 con LPCOpen v2.10
+* **Microcontrolador Principal:** NXP LPC1769 
+* **Bibliotecas de Terceros y Versiones:** --.
+* **Periféricos Avanzados Utilizados:** GPDMA, TIMER, ADC, DAC, UART, GPIO, NVIC ...
+* **Estrategia de Concurrencia:** Expliquen la arquitectura elegida: [Ej: Bare-metal con máquina de estados cooperativa / RTOS (FreeRTOS) detallando las tareas creadas y sus prioridades].
+
+---
+
+## 🔄 4. Proceso de Integración y Desarrollo (Común)
+Describan cronológicamente cómo fueron sumando y testeando las diferentes partes del proyecto (enfoque modular de ingeniería).
+
+* **Etapa 1 (Pruebas UART):** El primer paso fue implementar una UART funcional .
+* **Etapa 2 (Plotter):** Desarrollo del plotter en python.
+* **Etapa 3 (Adquisición):** Configuración y pruebas de ADC , vía UART.
+* **Etapa 4 (Filtrados):** Agreagmos un filtro Anti-Alias(Hardware) y uno de mediana(Software) ..
+* **Etapa 5(Generación de señales)** Implementación del DA.
+* **Etapa 6(Calibración y Ajuste)** Se ajustaron tiempos de adquisición y comunicación.
+
+---
+
+## 📊 5. Ensayos, Pruebas y Resultados (Común)
+Demuestren con datos empíricos que el sistema funciona correctamente. **Es obligatorio incluir registro visual**.
+
+* **Pruebas Funcionales Realizadas:** Detallen los ensayos (Ej: "Se inyectó una señal controlada para medir la precisión del ADC...").
+* **Evidencia Fotográfica y Gráficos:** * *Capturas de instrumental:* [Insertar capturas de Osciloscopio, Analizador Lógico o Terminal Serie]
+  * *Foto del Prototipo Real:* [Insertar foto del hardware final cableado/armado en funcionamiento]
+
+---
+
+## 📂 6. Estructura del Repositorio (Común)
+El repositorio debe mantener obligatoriamente la siguiente estructura limpia (¡Recuerden configurar correctamente el `.gitignore` para no subir carpetas temporales como `Debug/`, `Release/` o archivos `.p1` / `.d`!).
+
+```text
+├── firmware/          # Código fuente del proyecto (MPLABX / MCUXpresso / STM32Cube)
+│   ├── src/           # Archivos de código (.c)
+│   └── inc/           # Archivos de cabecera (.h)
+├── hardware/          # Archivos de diseño (KiCad/Altium), esquemáticos en PDF/Imagen y BOM
+├── docs/              # Datasheets clave, imágenes del README, notas de aplicación
+└── README.md          # Este archivo de presentación
